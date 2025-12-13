@@ -1,0 +1,24 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Chrome extension package
+*.crx
+*.pem
+
+# Logs
+*.log
+
+# Node modules (if any)
+node_modules/
+
+# Temporary files
+tmp/
+temp/
