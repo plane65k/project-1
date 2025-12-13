@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "SecondThought",
+  "description": "AI-powered buyer’s remorse checker",
+  "version": "0.1",
+
+  "permissions": ["activeTab"],
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["style.css"]
+    }
+  ]
+}
