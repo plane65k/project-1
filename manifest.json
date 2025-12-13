@@ -14,7 +14,7 @@
     "*://*.amazon.fr/*",
     "*://*.amazon.it/*",
     "*://*.amazon.es/*",
-    "*://generativelanguage.googleapis.com/*"
+    "https://api-inference.huggingface.co/*"
   ],
   "content_scripts": [
     {
