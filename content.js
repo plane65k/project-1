@@ -1,9 +1,9 @@
 (function() {
   'use strict';
 
-  // Gemini API Configuration
-  const GEMINI_API_KEY = 'AIzaSyDpI131XIRuwiuCtLGE8COkkZF0MnEpBdA';
-  const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+  // Hugging Face API Configuration
+  const HF_API_KEY = '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';
+  const HF_API_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1';
 
   // User selections state
   let userSelections = {
@@ -142,10 +142,10 @@
     return foundSignals;
   }
 
-  // Call Gemini API for buyer's remorse analysis
-  async function analyzeWithGemini(productTitle, price, urgencySignals, selections) {
+  // Call Hugging Face API for buyer's remorse analysis
+  async function analyzeWithAI(productTitle, price, urgencySignals, selections) {
     try {
-      const prompt = `You are a consumer psychology expert helping someone decide whether to make a purchase.
+      const prompt = `[INST] You are a consumer psychology expert helping someone decide whether to make a purchase.
 
 Product: ${productTitle}
 Price: ${price}
@@ -168,42 +168,43 @@ Where:
 - reason should be 1-2 sentences explaining the risk
 - suggestion must be: "wait", "compare", or "proceed"
 
-Respond with ONLY valid JSON, nothing else.`;
+Respond with ONLY valid JSON, nothing else. [/INST]`;
 
-      const response = await fetch(GEMINI_API_URL + '?key=' + GEMINI_API_KEY, {
+      const response = await fetch(HF_API_URL, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${HF_API_KEY}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ]
+          inputs: prompt,
+          parameters: {
+            return_full_text: false,
+            max_new_tokens: 500,
+            temperature: 0.7
+          }
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`API Error: ${errorData.error?.message || 'Unknown error'}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`API Error: ${errorData.error || response.statusText || 'Unknown error'}`);
       }
 
       const data = await response.json();
       
-      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+      // Hugging Face returns an array: [{ generated_text: "..." }]
+      if (!Array.isArray(data) || !data[0] || !data[0].generated_text) {
+        console.error('Unexpected API response:', data);
         throw new Error('Invalid API response format');
       }
 
-      const responseText = data.candidates[0].content.parts[0].text.trim();
+      const responseText = data[0].generated_text.trim();
       
       // Extract JSON from the response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
+        console.error('Raw response:', responseText);
         throw new Error('Could not parse AI response as JSON');
       }
 
@@ -216,7 +217,7 @@ Respond with ONLY valid JSON, nothing else.`;
 
       return analysisResult;
     } catch (error) {
-      console.error('Error calling Gemini API:', error);
+      console.error('Error calling Hugging Face API:', error);
       throw error;
     }
   }
@@ -337,7 +338,7 @@ Respond with ONLY valid JSON, nothing else.`;
       resultDiv.innerHTML = '<div class="secondthought-loading">Analyzing with AI...</div>';
 
       try {
-        const analysis = await analyzeWithGemini(productTitle, price, urgencySignals, userSelections);
+        const analysis = await analyzeWithAI(productTitle, price, urgencySignals, userSelections);
         
         const riskColor = analysis.risk === 'high' ? '#ef4444' : 
                          analysis.risk === 'medium' ? '#f59e0b' : '#10b981';
