@@ -196,6 +196,156 @@
   margin-bottom: 0;
 }
 
+/* Button Groups for Questions */
+.secondthought-question-block {
+  margin-bottom: 16px;
+}
+
+.secondthought-question-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.secondthought-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.secondthought-option-btn {
+  flex: 1;
+  min-width: 70px;
+  padding: 10px 12px;
+  border: 2px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #374151;
+}
+
+.secondthought-option-btn:hover {
+  border-color: #667eea;
+  background: #f3f4f6;
+}
+
+.secondthought-option-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* Analyze Button */
+.secondthought-analyze-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.secondthought-analyze-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.secondthought-analyze-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Analysis Result Display */
+.secondthought-analysis-result {
+  margin-top: 16px;
+}
+
+.secondthought-analysis {
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.secondthought-risk-badge {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.secondthought-reason {
+  margin: 12px 0;
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.secondthought-suggestion {
+  margin: 12px 0 16px 0;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+  color: #374151;
+  font-size: 13px;
+}
+
+.secondthought-suggestion strong {
+  color: #111;
+}
+
+.secondthought-loading {
+  padding: 16px;
+  text-align: center;
+  color: #667eea;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.secondthought-error {
+  padding: 12px;
+  background: #fee2e2;
+  border-left: 3px solid #ef4444;
+  color: #991b1b;
+  border-radius: 4px;
+  font-size: 13px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Reset Button */
+.secondthought-reset-btn {
+  width: 100%;
+  padding: 10px;
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondthought-reset-btn:hover {
+  background: #667eea;
+  color: white;
+}
+
 /* Toggle Button */
 .secondthought-toggle {
   position: fixed;

@@ -1,6 +1,17 @@
 (function() {
   'use strict';
 
+  // Gemini API Configuration
+  const GEMINI_API_KEY = 'AIzaSyDpI131XIRuwiuCtLGE8COkkZF0MnEpBdA';
+  const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+
+  // User selections state
+  let userSelections = {
+    whyBuying: null,
+    alreadyOwn: null,
+    financiallyAvailable: null
+  };
+
   // Check if we're on an Amazon product page
   function isAmazonProductPage() {
     return window.location.href.includes('/dp/') || 
@@ -77,6 +88,25 @@
     return null;
   }
 
+  // Detect product title from Amazon page
+  function detectProductTitle() {
+    const titleSelectors = [
+      'h1 span',
+      '#productTitle',
+      '[data-feature-name="title"]',
+      'h1'
+    ];
+
+    for (const selector of titleSelectors) {
+      const element = document.querySelector(selector);
+      if (element && element.textContent.trim().length > 0) {
+        return element.textContent.trim();
+      }
+    }
+
+    return 'Product';
+  }
+
   // Detect urgency signals in the page content
   function detectUrgencySignals() {
     const urgencyKeywords = [
@@ -112,6 +142,99 @@
     return foundSignals;
   }
 
+  // Call Gemini API for buyer's remorse analysis
+  async function analyzeWithGemini(productTitle, price, urgencySignals, selections) {
+    try {
+      const prompt = `You are a consumer psychology expert helping someone decide whether to make a purchase.
+
+Product: ${productTitle}
+Price: ${price}
+Urgency Signals Detected: ${urgencySignals.length > 0 ? urgencySignals.join(', ') : 'None'}
+
+User Responses:
+- Why are they buying? ${selections.whyBuying}
+- Do they already own something similar? ${selections.alreadyOwn}
+- Is this financially available to them? ${selections.financiallyAvailable}
+
+Based on this information, analyze the purchase risk and provide a brief JSON response with this exact structure (and ONLY this JSON, no other text):
+{
+  "risk": "low",
+  "reason": "Brief explanation of the risk level",
+  "suggestion": "wait"
+}
+
+Where:
+- risk must be: "low", "medium", or "high"
+- reason should be 1-2 sentences explaining the risk
+- suggestion must be: "wait", "compare", or "proceed"
+
+Respond with ONLY valid JSON, nothing else.`;
+
+      const response = await fetch(GEMINI_API_URL + '?key=' + GEMINI_API_KEY, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`API Error: ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+        throw new Error('Invalid API response format');
+      }
+
+      const responseText = data.candidates[0].content.parts[0].text.trim();
+      
+      // Extract JSON from the response
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Could not parse AI response as JSON');
+      }
+
+      const analysisResult = JSON.parse(jsonMatch[0]);
+      
+      // Validate the response structure
+      if (!analysisResult.risk || !analysisResult.reason || !analysisResult.suggestion) {
+        throw new Error('Invalid response structure from AI');
+      }
+
+      return analysisResult;
+    } catch (error) {
+      console.error('Error calling Gemini API:', error);
+      throw error;
+    }
+  }
+
+  // Create button group for question options
+  function createButtonGroup(groupId, options, selectedValue) {
+    return `
+      <div class="secondthought-button-group" data-group="${groupId}">
+        ${options.map(option => `
+          <button class="secondthought-option-btn ${selectedValue === option ? 'active' : ''}" 
+                  data-value="${option}">
+            ${option}
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
   // Create the SecondThought panel
   function createPanel() {
     if (document.getElementById('secondthought-panel')) {
@@ -123,6 +246,7 @@
     panel.className = 'secondthought-panel';
 
     const price = detectAmazonPrice();
+    const productTitle = detectProductTitle();
     const urgencySignals = detectUrgencySignals();
 
     panel.innerHTML = `
@@ -145,44 +269,28 @@
         </div>
 
         <div class="secondthought-section">
-          <h4>Before You Buy</h4>
-          <div class="secondthought-questions">
-            <details class="secondthought-question">
-              <summary>Do I really need this?</summary>
-              <div class="secondthought-answer">
-                <p>Consider:</p>
-                <ul>
-                  <li>Will I use this regularly?</li>
-                  <li>Do I already own something similar?</li>
-                  <li>Can I wait 24 hours to decide?</li>
-                </ul>
-              </div>
-            </details>
-            
-            <details class="secondthought-question">
-              <summary>Is this the best price?</summary>
-              <div class="secondthought-answer">
-                <p>Check:</p>
-                <ul>
-                  <li>Price history on CamelCamelCamel</li>
-                  <li>Competitor prices</li>
-                  <li>Used or refurbished options</li>
-                </ul>
-              </div>
-            </details>
-            
-            <details class="secondthought-question">
-              <summary>Am I being manipulated?</summary>
-              <div class="secondthought-answer">
-                <p>Watch out for:</p>
-                <ul>
-                  <li>Artificial urgency (${urgencySignals.length} signals detected)</li>
-                  <li>Inflated original prices</li>
-                  <li>Fake scarcity</li>
-                </ul>
-              </div>
-            </details>
+          <h4>Quick Analysis</h4>
+          
+          <div class="secondthought-question-block">
+            <label class="secondthought-question-label">Why are you buying?</label>
+            ${createButtonGroup('whyBuying', ['Impulse', 'Planned', 'Need', 'Emotional'], userSelections.whyBuying)}
           </div>
+
+          <div class="secondthought-question-block">
+            <label class="secondthought-question-label">Already own something similar?</label>
+            ${createButtonGroup('alreadyOwn', ['Yes', 'No'], userSelections.alreadyOwn)}
+          </div>
+
+          <div class="secondthought-question-block">
+            <label class="secondthought-question-label">Financially available?</label>
+            ${createButtonGroup('financiallyAvailable', ['Yes', 'No'], userSelections.financiallyAvailable)}
+          </div>
+
+          <button class="secondthought-analyze-btn" id="secondthought-analyze-btn">
+            Analyze with AI
+          </button>
+
+          <div id="secondthought-analysis-result" class="secondthought-analysis-result"></div>
         </div>
       </div>
     `;
@@ -192,6 +300,88 @@
     // Add close button functionality
     const closeBtn = document.getElementById('secondthought-close');
     closeBtn.addEventListener('click', togglePanel);
+
+    // Add button group event listeners
+    const buttonGroups = panel.querySelectorAll('.secondthought-button-group');
+    buttonGroups.forEach(group => {
+      const buttons = group.querySelectorAll('.secondthought-option-btn');
+      buttons.forEach(button => {
+        button.addEventListener('click', function() {
+          const groupId = group.getAttribute('data-group');
+          const value = this.getAttribute('data-value');
+          
+          // Update UI
+          buttons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Update state
+          userSelections[groupId] = value;
+        });
+      });
+    });
+
+    // Add analyze button event listener
+    const analyzeBtn = document.getElementById('secondthought-analyze-btn');
+    analyzeBtn.addEventListener('click', async function() {
+      const resultDiv = document.getElementById('secondthought-analysis-result');
+      
+      // Check if all selections are made
+      if (!userSelections.whyBuying || !userSelections.alreadyOwn || !userSelections.financiallyAvailable) {
+        resultDiv.innerHTML = '<div class="secondthought-error">Please answer all questions before analyzing.</div>';
+        return;
+      }
+
+      // Show loading state
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = 'Analyzing...';
+      resultDiv.innerHTML = '<div class="secondthought-loading">Analyzing with AI...</div>';
+
+      try {
+        const analysis = await analyzeWithGemini(productTitle, price, urgencySignals, userSelections);
+        
+        const riskColor = analysis.risk === 'high' ? '#ef4444' : 
+                         analysis.risk === 'medium' ? '#f59e0b' : '#10b981';
+        
+        resultDiv.innerHTML = `
+          <div class="secondthought-analysis">
+            <div class="secondthought-risk-badge" style="background-color: ${riskColor}">
+              ${analysis.risk.toUpperCase()} RISK
+            </div>
+            <p class="secondthought-reason">${analysis.reason}</p>
+            <p class="secondthought-suggestion">
+              <strong>Suggestion:</strong> ${analysis.suggestion.charAt(0).toUpperCase() + analysis.suggestion.slice(1)}
+            </p>
+            <button class="secondthought-reset-btn" id="secondthought-reset-btn">
+              Analyze Again
+            </button>
+          </div>
+        `;
+
+        // Add reset button listener
+        document.getElementById('secondthought-reset-btn').addEventListener('click', resetAnalysis);
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="secondthought-error">Error: ${error.message || 'Failed to analyze. Please try again.'}</div>`;
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = 'Analyze with AI';
+      }
+    });
+  }
+
+  // Reset analysis UI
+  function resetAnalysis() {
+    userSelections = {
+      whyBuying: null,
+      alreadyOwn: null,
+      financiallyAvailable: null
+    };
+    
+    const resultDiv = document.getElementById('secondthought-analysis-result');
+    resultDiv.innerHTML = '';
+    
+    // Reset button states
+    const buttons = document.querySelectorAll('.secondthought-option-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
   }
 
   // Create the toggle button
