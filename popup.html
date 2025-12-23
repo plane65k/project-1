@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini AI Assistant</title>
+    <title>avo - AI Page Analyzer</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="gemini-container">
-        <header class="gemini-header">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="gemini-icon"></div>
-                    <h1>Gemini</h1>
-                </div>
+    <div class="avo-container">
+        <header class="avo-header">
+            <div class="logo">
+                <div class="avo-icon">avo</div>
+                <h1>avo</h1>
+            </div>
+            <div class="header-buttons">
+                <button class="clear-history-btn" id="clearHistoryBtn" title="Clear conversation">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 4 21 4"></polyline>
+                        <path d="M19 4v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4m3 0V2h8v2M10 11v6M14 11v6"></path>
+                    </svg>
+                </button>
                 <button class="settings-btn" id="settingsBtn" title="Settings">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
@@ -23,21 +29,26 @@
             </div>
         </header>
 
-        <main class="gemini-main">
+        <main class="avo-main">
             <div class="chat-container" id="chatContainer">
                 <div class="welcome-message" id="welcomeMessage">
                     <div class="welcome-icon">✨</div>
-                    <h2>Welcome to Gemini AI</h2>
-                    <p>Summarize pages or ask questions about the content you're viewing</p>
+                    <h2>Welcome to avo</h2>
+                    <p>Ask questions about the page or click summarize to get started</p>
                 </div>
                 <div class="messages" id="messages"></div>
+            </div>
+
+            <div class="conversation-history" id="conversationHistory">
+                <div class="nav-title">Recent Messages</div>
+                <div id="historyList"></div>
             </div>
 
             <div class="input-container">
                 <div class="input-wrapper">
                     <textarea 
                         id="messageInput" 
-                        placeholder="Ask a question about this page or click summarize..."
+                        placeholder="Ask a question about this page..."
                         rows="1"
                         maxlength="2000"
                     ></textarea>
@@ -81,6 +92,16 @@
                         <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
                         <option value="anthropic/claude-2">Claude 2</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="highlightColor">Highlight Color</label>
+                    <input type="color" id="highlightColor" value="#FFEB3B">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="autoHighlight" checked>
+                        Auto-highlight text references
+                    </label>
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-secondary" id="cancelSettings">Cancel</button>

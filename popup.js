@@ -1,25 +1,33 @@
-// Gemini AI Assistant - Popup Script
-class GeminiAssistant {
+// avo - Advanced AI Page Analyzer
+class AvoAssistant {
     constructor() {
         this.messages = [];
         this.pageContent = '';
+        this.currentTab = null;
         this.settings = {
             apiKey: '',
-            model: 'meta-llama/llama-2-70b-chat'
+            model: 'meta-llama/llama-2-70b-chat',
+            highlightColor: '#FFEB3B',
+            autoHighlight: true
         };
         
         this.init();
     }
 
     async init() {
-        this.loadSettings();
+        await this.loadSettings();
+        await this.getCurrentTab();
         this.setupEventListeners();
         this.loadPageContent();
         this.autoResizeTextarea();
     }
 
+    async getCurrentTab() {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        this.currentTab = tab;
+    }
+
     setupEventListeners() {
-        // Send message
         const sendBtn = document.getElementById('sendBtn');
         const messageInput = document.getElementById('messageInput');
         
@@ -31,18 +39,14 @@ class GeminiAssistant {
             }
         });
 
-        // Auto-resize textarea
         messageInput.addEventListener('input', () => this.autoResizeTextarea());
 
-        // Summarize button
         document.getElementById('summarizeBtn').addEventListener('click', () => this.summarizePage());
-
-        // Settings
+        document.getElementById('clearHistoryBtn').addEventListener('click', () => this.clearConversation());
         document.getElementById('settingsBtn').addEventListener('click', () => this.showSettings());
         document.getElementById('saveSettings').addEventListener('click', () => this.saveSettings());
         document.getElementById('cancelSettings').addEventListener('click', () => this.hideSettings());
 
-        // Close modal on backdrop click
         document.getElementById('settingsModal').addEventListener('click', (e) => {
             if (e.target.id === 'settingsModal') {
                 this.hideSettings();
@@ -52,13 +56,16 @@ class GeminiAssistant {
 
     async loadSettings() {
         try {
-            const result = await chrome.storage.sync.get(['apiKey', 'model']);
+            const result = await chrome.storage.sync.get(['apiKey', 'model', 'highlightColor', 'autoHighlight']);
             this.settings.apiKey = result.apiKey || '';
             this.settings.model = result.model || 'meta-llama/llama-2-70b-chat';
+            this.settings.highlightColor = result.highlightColor || '#FFEB3B';
+            this.settings.autoHighlight = result.autoHighlight !== false;
             
-            // Update UI with loaded settings
             document.getElementById('apiKey').value = this.settings.apiKey;
             document.getElementById('model').value = this.settings.model;
+            document.getElementById('highlightColor').value = this.settings.highlightColor;
+            document.getElementById('autoHighlight').checked = this.settings.autoHighlight;
         } catch (error) {
             console.error('Error loading settings:', error);
         }
@@ -67,6 +74,8 @@ class GeminiAssistant {
     async saveSettings() {
         const apiKey = document.getElementById('apiKey').value.trim();
         const model = document.getElementById('model').value;
+        const highlightColor = document.getElementById('highlightColor').value;
+        const autoHighlight = document.getElementById('autoHighlight').checked;
 
         if (!apiKey) {
             this.showError('Please enter an OpenRouter API key');
@@ -74,9 +83,11 @@ class GeminiAssistant {
         }
 
         try {
-            await chrome.storage.sync.set({ apiKey, model });
+            await chrome.storage.sync.set({ apiKey, model, highlightColor, autoHighlight });
             this.settings.apiKey = apiKey;
             this.settings.model = model;
+            this.settings.highlightColor = highlightColor;
+            this.settings.autoHighlight = autoHighlight;
             this.hideSettings();
             this.showSuccess('Settings saved successfully');
         } catch (error) {
@@ -87,8 +98,6 @@ class GeminiAssistant {
 
     showSettings() {
         document.getElementById('settingsModal').style.display = 'flex';
-        document.getElementById('apiKey').value = this.settings.apiKey;
-        document.getElementById('model').value = this.settings.model;
     }
 
     hideSettings() {
@@ -97,10 +106,7 @@ class GeminiAssistant {
 
     async loadPageContent() {
         try {
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            
-            const response = await chrome.tabs.sendMessage(tab.id, { action: 'getPageContent' });
-            
+            const response = await chrome.tabs.sendMessage(this.currentTab.id, { action: 'getPageContent' });
             if (response && response.content) {
                 this.pageContent = response.content;
                 console.log('Page content loaded:', this.pageContent.length, 'characters');
@@ -130,21 +136,22 @@ class GeminiAssistant {
             return;
         }
 
-        // Clear input and hide welcome message
         input.value = '';
         this.hideWelcomeMessage();
         this.autoResizeTextarea();
 
-        // Add user message
         this.addMessage('user', message);
-        
-        // Show loading
         this.showLoading();
 
         try {
             const response = await this.callOpenRouter(message);
             this.hideLoading();
             this.addMessage('assistant', response);
+            
+            // Auto-highlight text if enabled
+            if (this.settings.autoHighlight) {
+                this.autoHighlightMatches(response);
+            }
         } catch (error) {
             this.hideLoading();
             this.addMessage('assistant', `Error: ${error.message}`);
@@ -171,6 +178,10 @@ class GeminiAssistant {
             const response = await this.callOpenRouter('Please provide a concise summary of the main content and key points from this page.');
             this.hideLoading();
             this.addMessage('assistant', response);
+            
+            if (this.settings.autoHighlight) {
+                this.autoHighlightMatches(response);
+            }
         } catch (error) {
             this.hideLoading();
             this.addMessage('assistant', `Error: ${error.message}`);
@@ -178,33 +189,38 @@ class GeminiAssistant {
     }
 
     async callOpenRouter(message) {
-        const prompt = `You are an AI assistant helping a user understand a web page. The user is asking about the following page content:
+        const systemPrompt = `You are an advanced AI assistant helping users understand web pages. 
+You have access to the page content and should provide accurate, helpful responses.
+When you mention specific text or sections from the page, be precise and quote them if relevant.
+Maintain context from previous messages in the conversation.`;
 
----
-${this.pageContent.substring(0, 8000)}
----
+        const messages = [
+            {
+                role: 'system',
+                content: systemPrompt + '\n\nPage content:\n' + this.pageContent.substring(0, 8000)
+            },
+            ...this.messages.filter(m => m.role !== 'system').map(m => ({
+                role: m.role,
+                content: m.content
+            })),
+            {
+                role: 'user',
+                content: message
+            }
+        ];
 
-User question: ${message}
-
-Please provide a helpful response based on the page content. If the content doesn't contain relevant information, please say so politely.`;
-
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        const response = await fetch('https://openrouter.io/api/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.settings.apiKey}`,
-                'HTTP-Referer': 'https://gemini-assistant.chrome-extension',
-                'X-Title': 'Gemini AI Assistant'
+                'HTTP-Referer': 'https://avo.chrome-extension',
+                'X-Title': 'avo - AI Page Analyzer'
             },
             body: JSON.stringify({
                 model: this.settings.model,
-                messages: [
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                max_tokens: 1000,
+                messages: messages,
+                max_tokens: 1500,
                 temperature: 0.7
             })
         });
@@ -223,6 +239,49 @@ Please provide a helpful response based on the page content. If the content does
         return data.choices[0].message.content.trim();
     }
 
+    autoHighlightMatches(responseText) {
+        try {
+            const sentences = responseText.match(/[^.!?]+[.!?]+/g) || [];
+            const textPieces = [];
+
+            for (const sentence of sentences) {
+                const words = sentence.trim().split(/\s+/).slice(0, 5).join(' ');
+                if (words.length > 10) {
+                    textPieces.push(words);
+                }
+            }
+
+            if (textPieces.length > 0) {
+                this.highlightTextOnPage(textPieces[0]);
+            }
+        } catch (error) {
+            console.error('Error auto-highlighting:', error);
+        }
+    }
+
+    highlightTextOnPage(searchText) {
+        try {
+            chrome.tabs.sendMessage(this.currentTab.id, {
+                action: 'highlightText',
+                searchText: searchText,
+                color: this.settings.highlightColor
+            }).catch(error => console.error('Error highlighting text:', error));
+        } catch (error) {
+            console.error('Error in highlightTextOnPage:', error);
+        }
+    }
+
+    scrollToText(searchText) {
+        try {
+            chrome.tabs.sendMessage(this.currentTab.id, {
+                action: 'scrollToText',
+                searchText: searchText
+            }).catch(error => console.error('Error scrolling to text:', error));
+        } catch (error) {
+            console.error('Error in scrollToText:', error);
+        }
+    }
+
     addMessage(role, content) {
         const messagesContainer = document.getElementById('messages');
         const messageId = Date.now().toString();
@@ -231,15 +290,17 @@ Please provide a helpful response based on the page content. If the content does
         messageElement.className = `message ${role}`;
         messageElement.dataset.messageId = messageId;
         
-        const avatar = role === 'user' ? 'U' : 'AI';
+        const avatar = role === 'user' ? 'You' : 'AI';
+        
+        const messageContent = this.parseMessageContent(content);
         
         messageElement.innerHTML = `
             <div class="message-avatar">${avatar}</div>
             <div class="message-content">
-                <div class="message-bubble">${this.escapeHtml(content)}</div>
+                <div class="message-bubble">${messageContent}</div>
                 ${role === 'assistant' ? `
                     <div class="message-actions">
-                        <button class="copy-btn" onclick="geminiAssistant.copyMessage('${messageId}')">
+                        <button class="copy-btn" onclick="avoAssistant.copyMessage('${messageId}')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -255,6 +316,13 @@ Please provide a helpful response based on the page content. If the content does
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         
         this.messages.push({ role, content, id: messageId });
+        this.updateConversationHistory();
+    }
+
+    parseMessageContent(content) {
+        const div = document.createElement('div');
+        div.textContent = content;
+        return div.innerHTML;
     }
 
     copyMessage(messageId) {
@@ -268,10 +336,49 @@ Please provide a helpful response based on the page content. If the content does
         }
     }
 
+    updateConversationHistory() {
+        const historyList = document.getElementById('historyList');
+        const recentMessages = this.messages.slice(-5);
+        
+        historyList.innerHTML = recentMessages.map((msg, idx) => `
+            <div class="history-item" title="${msg.content}" onclick="avoAssistant.scrollToMessage('${msg.id}')">
+                <strong>${msg.role === 'user' ? 'You:' : 'AI:'}</strong> ${msg.content.substring(0, 30)}...
+            </div>
+        `).join('');
+
+        if (this.messages.length > 0) {
+            document.getElementById('conversationHistory').classList.add('visible');
+        }
+    }
+
+    scrollToMessage(messageId) {
+        const element = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    clearConversation() {
+        if (confirm('Are you sure you want to clear the conversation history?')) {
+            this.messages = [];
+            document.getElementById('messages').innerHTML = '';
+            document.getElementById('conversationHistory').classList.remove('visible');
+            this.showWelcomeMessage();
+            this.showSuccess('Conversation cleared');
+        }
+    }
+
     hideWelcomeMessage() {
         const welcomeMessage = document.getElementById('welcomeMessage');
         if (welcomeMessage) {
             welcomeMessage.style.display = 'none';
+        }
+    }
+
+    showWelcomeMessage() {
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        if (welcomeMessage) {
+            welcomeMessage.style.display = 'block';
         }
     }
 
@@ -292,7 +399,6 @@ Please provide a helpful response based on the page content. If the content does
     }
 
     showNotification(message, type = 'info') {
-        // Create notification element
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
@@ -301,7 +407,7 @@ Please provide a helpful response based on the page content. If the content does
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: ${type === 'error' ? '#ea4335' : type === 'success' ? '#34a853' : '#1a73e8'};
+            background: ${type === 'error' ? '#ea4335' : type === 'success' ? '#34a853' : '#667eea'};
             color: white;
             padding: 12px 20px;
             border-radius: 4px;
@@ -313,7 +419,6 @@ Please provide a helpful response based on the page content. If the content does
 
         document.body.appendChild(notification);
 
-        // Remove after 3 seconds
         setTimeout(() => {
             notification.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => {
@@ -324,12 +429,6 @@ Please provide a helpful response based on the page content. If the content does
         }, 3000);
     }
 
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
     autoResizeTextarea() {
         const textarea = document.getElementById('messageInput');
         textarea.style.height = 'auto';
@@ -337,7 +436,6 @@ Please provide a helpful response based on the page content. If the content does
     }
 }
 
-// Add CSS animations
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
@@ -351,5 +449,4 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Initialize the app
-const geminiAssistant = new GeminiAssistant();
+const avoAssistant = new AvoAssistant();

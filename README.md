@@ -1,162 +1,228 @@
-# Gemini AI Assistant Chrome Extension
+# avo - Advanced AI Page Analyzer
 
-A Google Gemini-inspired Chrome extension that provides AI-powered page summarization and Q&A capabilities using OpenRouter API.
+A powerful Chrome extension that uses AI to analyze, summarize, and answer questions about web pages with intelligent text highlighting and conversation memory.
 
 ## Features
 
-- **Page Summarization**: Generate concise summaries of any webpage with one click
-- **Q&A Interface**: Ask questions about the current page content
-- **Gemini-Inspired UI**: Clean, modern interface similar to Google Gemini
-- **Multiple AI Models**: Support for various models via OpenRouter (Llama 2, GPT-3.5, Claude 2)
-- **Smart Content Extraction**: Intelligently extracts main content while filtering out navigation, ads, and boilerplate
-- **Copy to Clipboard**: Easily copy AI responses
-- **Secure API Key Storage**: Uses Chrome's secure storage for API keys
+### Core Capabilities
+- **Smart Page Summarization**: Generate concise summaries of any web page content
+- **AI-Powered Q&A**: Ask questions about page content and get intelligent responses
+- **Conversation Memory**: Full conversation history is maintained within sessions
+- **Gemini-Inspired UI**: Clean, minimal interface with smooth animations
+
+### Advanced Text Navigation
+- **Smart Highlighting**: Automatically highlights relevant text from AI responses on the page
+- **Scroll to Text**: Smooth scrolling to highlighted sections
+- **Customizable Colors**: Choose your preferred highlight color
+- **Auto-Highlight Toggle**: Enable/disable automatic text highlighting in settings
+- **Visual Feedback**: Highlighted text with hover effects and active states
+
+### User Experience
+- **Recent Messages Panel**: Quick access to conversation history
+- **Clear Conversation**: Reset conversation with one click
+- **Copy Responses**: Copy any AI response to clipboard
+- **Loading States**: Professional loading indicators with smooth animations
+- **Error Handling**: Clear, helpful error messages
+- **Responsive Design**: Works on various screen sizes
 
 ## Installation
 
 1. Clone or download this repository
 2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top right
-4. Click "Load unpacked" and select the extension folder
-5. The extension icon will appear in your Chrome toolbar
+3. Enable "Developer mode" (toggle in top right)
+4. Click "Load unpacked" and select the extension directory
+5. The "avo" icon should now appear in your Chrome toolbar
 
 ## Setup
 
-1. Click the Gemini AI Assistant icon in your toolbar
-2. Click the settings button (gear icon) in the top right
-3. Enter your OpenRouter API key
-4. Choose your preferred AI model
-5. Click "Save"
+### Get an OpenRouter API Key
 
-### Getting an OpenRouter API Key
+1. Visit [OpenRouter.io](https://openrouter.io)
+2. Sign up for a free account
+3. Navigate to API keys section
+4. Copy your API key
 
-1. Visit [OpenRouter.ai](https://openrouter.ai)
-2. Create an account or sign in
-3. Navigate to the API keys section
-4. Generate a new API key
-5. Copy the key and paste it in the extension settings
+### Configure avo
+
+1. Click the avo extension icon
+2. Click the settings button (gear icon)
+3. Paste your OpenRouter API key
+4. (Optional) Select your preferred AI model
+5. (Optional) Customize highlight color
+6. Click "Save"
 
 ## Usage
 
-### Summarizing a Page
+### Summarize a Page
+1. Open any web page
+2. Click the avo extension icon
+3. Click the summarize button (document icon)
+4. avo will analyze the page and provide a summary
 
-1. Navigate to any webpage
-2. Click the extension icon to open the Gemini interface
-3. Click the summarize button (document icon) in the input area
-4. Wait for the AI to generate a summary
+### Ask Questions
+1. Open any web page
+2. Click the avo extension icon
+3. Type your question in the input field
+4. Press Enter or click the send button
+5. View the AI response and any highlighted text
 
-### Asking Questions
+### Highlight Text
+- When enabled, avo automatically highlights relevant text from AI responses
+- Highlights are shown in yellow by default (customizable in settings)
+- Highlighted text automatically scrolls into view
+- Click on highlighted text to jump to it
 
-1. With the extension open, type your question in the input field
-2. Press Enter or click the send button
-3. The AI will respond based on the current page content
+### Manage Conversation
+- View recent messages in the "Recent Messages" panel
+- Click any recent message to scroll to it in the conversation
+- Click the clear button (trash icon) to reset the conversation
+- Conversation history is maintained within your session
 
-### Example Questions
+## Advanced Features
 
-- "What is the main topic of this page?"
-- "Summarize the key findings mentioned"
-- "What are the important dates mentioned?"
-- "Explain the technical concepts discussed"
-- "What are the author's main arguments?"
+### Conversation Context
+- Full conversation history is included in each AI request
+- The AI understands previous messages and maintains context
+- System context includes the page content for accurate responses
+
+### Text Highlighting System
+- Intelligent text matching (case-insensitive)
+- Supports multiple simultaneous highlights
+- Prevents double-highlighting of text
+- Smooth scroll animation to highlighted sections
+- Temporary visual feedback when scrolling
+
+### Settings & Customization
+- **API Key**: Securely stored in Chrome storage
+- **Model Selection**: Choose from multiple AI models:
+  - Llama 2 70B (default)
+  - GPT-3.5 Turbo
+  - Claude 2
+- **Highlight Color**: Pick any color for text highlights
+- **Auto-Highlight**: Enable/disable automatic highlighting
 
 ## Supported AI Models
 
-- **Llama 2 70B** (Default) - Meta's large language model
-- **GPT-3.5 Turbo** - OpenAI's fast and efficient model
-- **Claude 2** - Anthropic's capable assistant model
+- **Llama 2 70B** (Default) - Fast and efficient
+- **GPT-3.5 Turbo** - OpenAI's fast model
+- **Claude 2** - Anthropic's powerful model
+
+Models are provided by [OpenRouter](https://openrouter.io), which supports 100+ open and commercial models.
+
+## How It Works
+
+### Content Extraction
+1. avo analyzes the current page
+2. Removes clutter (ads, navigation, scripts)
+3. Extracts main content intelligently
+4. Limits content to 8,000 characters for optimal API performance
+
+### AI Analysis
+1. Sends page content and your message to OpenRouter
+2. Includes conversation history for context
+3. Receives and displays AI response
+4. Auto-highlights relevant text on the page
+
+### Text Highlighting
+1. Scans the page content for matches
+2. Highlights all occurrences of matched text
+3. Automatically scrolls first highlight into view
+4. Provides visual feedback for user interaction
+
+## Privacy & Security
+
+- **No Data Collection**: avo doesn't collect or share your data
+- **Secure Storage**: API keys are stored in Chrome's secure storage
+- **HTTPS Only**: All communication with OpenRouter uses HTTPS
+- **No Tracking**: No analytics or tracking code
+- **Content Privacy**: Page content is only sent when you request analysis
 
 ## Technical Details
 
-### Content Extraction
+### Architecture
+- **Manifest V3**: Modern Chrome extension API
+- **ES6+ JavaScript**: Clean, maintainable code
+- **Content Scripts**: Page analysis and highlighting
+- **Background Service Worker**: Memory management
+- **Chrome Storage API**: Secure settings storage
 
-The extension intelligently extracts page content by:
-
-- Identifying main content areas using semantic HTML5 elements
-- Filtering out navigation, headers, footers, and advertisements
-- Cleaning up boilerplate text and excessive whitespace
-- Limiting content to 8,000 characters for optimal API performance
-
-### Privacy & Security
-
-- API keys are stored securely using Chrome's storage API
-- Page content is only sent to OpenRouter API when you actively use the extension
-- No data is stored or transmitted without your explicit action
-- The extension works entirely locally except for API calls
-
-### Browser Compatibility
-
-- Chrome 88+
-- Manifest V3 compliant
-- Works on all websites (HTTP/HTTPS)
-
-## File Structure
-
+### File Structure
 ```
-├── manifest.json          # Extension configuration
-├── popup.html             # Main UI interface
-├── popup.js               # UI logic and API integration
-├── content.js             # Page content extraction
-├── styles.css             # Gemini-inspired styling
-├── icons/                 # Extension icons
-│   ├── icon16.png
-│   ├── icon48.png
-│   └── icon128.png
-└── README.md              # This file
+avo/
+├── manifest.json         # Extension configuration
+├── popup.html            # UI structure
+├── popup.js              # Main application logic
+├── content.js            # Page analysis and highlighting
+├── background.js         # Service worker for memory
+├── styles.css            # Modern styling
+├── icon16.png            # Extension icon (16x16)
+├── icon48.png            # Extension icon (48x48)
+├── icon128.png           # Extension icon (128x128)
+└── README.md             # This file
 ```
-
-## Development
-
-### Building from Source
-
-1. Clone the repository
-2. Make changes to the source files
-3. Load the extension in Chrome developer mode
-4. Test your changes
-
-### Key Components
-
-- **popup.js**: Main application logic, API integration, UI management
-- **content.js**: Content extraction and message passing
-- **styles.css**: Complete UI styling with Google design language
-- **manifest.json**: Extension permissions and configuration
 
 ## Troubleshooting
 
-### Extension Not Loading
+### "No page content available"
+- Some pages may have content protection
+- Try opening a different web page
+- Make sure the page has loaded completely
 
-- Ensure Developer mode is enabled in Chrome
-- Check that all files are in the same directory
-- Verify manifest.json syntax is valid
+### Highlights not appearing
+- Check that "Auto-highlight" is enabled in settings
+- Try manually highlighting by asking a question
+- Some pages may have CSP restrictions
 
-### API Errors
+### API errors
+- Verify your OpenRouter API key is correct
+- Check your API key has sufficient credits
+- Try a different AI model
+- Check your internet connection
 
-- Confirm your OpenRouter API key is valid
-- Check if you have sufficient API credits
-- Verify internet connectivity
-- Try switching to a different AI model
+### Page content extraction fails
+- Some pages are protected or have unusual layouts
+- Try refreshing the page and reopening avo
+- Complex single-page applications may need time to load
 
-### Content Extraction Issues
+## Keyboard Shortcuts
 
-- Some websites may block content extraction
-- Try refreshing the page and reopening the extension
-- Content extraction works best on article-style pages
+- **Enter**: Send message (in input field)
+- **Shift+Enter**: New line (in input field)
 
-## Contributing
+## Tips & Best Practices
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details
+1. **Ask Specific Questions**: More specific questions yield better results
+2. **Summarize First**: Start with summarize to understand page structure
+3. **Follow-up Questions**: Use conversation context for detailed analysis
+4. **Manage History**: Clear conversation when switching pages
+5. **Try Different Models**: Different models excel at different tasks
 
 ## Support
 
-For issues and feature requests, please use the GitHub issue tracker.
+For issues, suggestions, or contributions, please open an issue or submit a pull request.
+
+## License
+
+This project is open source and available under the MIT License.
+
+## Credits
+
+- **UI Design**: Inspired by Google Gemini's clean interface
+- **AI Models**: Powered by [OpenRouter](https://openrouter.io)
+- **Icons**: Material Design Icons
+
+## Changelog
+
+### Version 2.0.0
+- Complete rebranding from "Gemini Assistant" to "avo"
+- Advanced text highlighting and navigation features
+- Conversation memory system
+- Improved UI with conversation history panel
+- Customizable highlight colors
+- Enhanced error handling
+- Better content extraction
+- Multiple AI model support
 
 ---
 
-**Note**: This extension requires an active OpenRouter API subscription. API usage costs apply based on the models you choose.
+**avo** - Making web pages more interactive and understandable through AI.
