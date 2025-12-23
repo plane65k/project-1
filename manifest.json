@@ -1,26 +1,32 @@
 {
   "manifest_version": 3,
-  "name": "Gemini AI Assistant",
+  "name": "avo",
   "version": "2.0.0",
-  "description": "AI-powered page summarization and Q&A with Gemini-inspired interface",
+  "description": "Advanced AI page analyzer with smart text navigation and conversation memory",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
+    "https://openrouter.io/*",
     "https://openrouter.ai/*",
     "<all_urls>"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Gemini AI Assistant"
+    "default_title": "avo - AI Page Analyzer"
   },
   "icons": {
     "16": "icon16.png",
@@ -28,6 +34,6 @@
     "128": "icon128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
+    "extension_pages": "script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'self'"
   }
 }
