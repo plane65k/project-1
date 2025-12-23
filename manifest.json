@@ -1,43 +1,33 @@
 {
   "manifest_version": 3,
-  "name": "SecondThought",
-  "version": "1.0.0",
-  "description": "Helps you make better purchasing decisions by detecting prices and urgency signals on Amazon",
+  "name": "Gemini AI Assistant",
+  "version": "2.0.0",
+  "description": "AI-powered page summarization and Q&A with Gemini-inspired interface",
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "storage"
   ],
   "host_permissions": [
-    "*://*.amazon.com/*",
-    "*://*.amazon.co.uk/*",
-    "*://*.amazon.ca/*",
-    "*://*.amazon.de/*",
-    "*://*.amazon.fr/*",
-    "*://*.amazon.it/*",
-    "*://*.amazon.es/*",
-    "https://api-inference.huggingface.co/*"
+    "https://openrouter.ai/*",
+    "<all_urls>"
   ],
   "content_scripts": [
     {
-      "matches": [
-        "*://*.amazon.com/*",
-        "*://*.amazon.co.uk/*",
-        "*://*.amazon.ca/*",
-        "*://*.amazon.de/*",
-        "*://*.amazon.fr/*",
-        "*://*.amazon.it/*",
-        "*://*.amazon.es/*"
-      ],
+      "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "css": ["style.css"],
       "run_at": "document_idle"
     }
   ],
   "action": {
-    "default_title": "SecondThought"
+    "default_popup": "popup.html",
+    "default_title": "Gemini AI Assistant"
   },
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
     "128": "icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }
