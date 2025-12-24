@@ -15,16 +15,43 @@ class AvoAssistant {
     }
 
     async init() {
-        await this.loadSettings();
-        await this.getCurrentTab();
-        this.setupEventListeners();
-        this.loadPageContent();
-        this.autoResizeTextarea();
+        try {
+            console.log('Initializing avo extension...');
+            
+            await this.loadSettings();
+            console.log('Settings loaded successfully');
+            
+            await this.getCurrentTab();
+            console.log('Current tab obtained:', this.currentTab?.id);
+            
+            this.setupEventListeners();
+            console.log('Event listeners setup complete');
+            
+            await this.loadPageContent();
+            console.log('Page content loaded successfully');
+            
+            this.autoResizeTextarea();
+            console.log('avo extension initialized successfully');
+            
+        } catch (error) {
+            console.error('Failed to initialize avo extension:', error);
+            this.showError('Extension initialization failed: ' + error.message);
+        }
     }
 
     async getCurrentTab() {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        this.currentTab = tab;
+        try {
+            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            
+            if (!tabs || tabs.length === 0) {
+                throw new Error('No active tab found');
+            }
+            
+            this.currentTab = tabs[0];
+        } catch (error) {
+            console.error('Error getting current tab:', error);
+            throw error;
+        }
     }
 
     setupEventListeners() {
@@ -106,17 +133,39 @@ class AvoAssistant {
 
     async loadPageContent() {
         try {
-            const response = await chrome.tabs.sendMessage(this.currentTab.id, { action: 'getPageContent' });
-            if (response && response.content) {
-                this.pageContent = response.content;
-                console.log('Page content loaded:', this.pageContent.length, 'characters');
-            } else {
-                this.showError('Unable to extract page content');
+            // Check if current tab exists
+            if (!this.currentTab || !this.currentTab.id) {
+                throw new Error('No active tab available');
             }
+            
+            // Send message to content script
+            const response = await chrome.tabs.sendMessage(this.currentTab.id, { action: 'getPageContent' });
+            
+            // Validate response
+            if (!response) {
+                throw new Error('No response from content script');
+            }
+            
+            if (!response.content) {
+                throw new Error('Could not extract page text');
+            }
+            
+            // Update page content
+            this.pageContent = response.content;
+            console.log('Page content loaded successfully:', this.pageContent.length, 'characters');
+            
+            // Update UI with page content summary
+            this.updatePageTextUI();
+            
         } catch (error) {
             console.error('Error loading page content:', error);
-            this.showError('Failed to load page content');
+            this.showError('Failed to load page content: ' + error.message);
         }
+    }
+    
+    updatePageTextUI() {
+        // This can be extended to show page content status in the UI
+        console.log('Page content available for analysis');
     }
 
     async sendMessage() {
@@ -259,26 +308,50 @@ Maintain context from previous messages in the conversation.`;
         }
     }
 
-    highlightTextOnPage(searchText) {
+    async highlightTextOnPage(searchText) {
         try {
-            chrome.tabs.sendMessage(this.currentTab.id, {
+            if (!this.currentTab || !this.currentTab.id) {
+                throw new Error('No active tab available');
+            }
+            
+            if (!searchText || searchText.trim().length === 0) {
+                console.warn('No search text provided for highlighting');
+                return;
+            }
+
+            await chrome.tabs.sendMessage(this.currentTab.id, {
                 action: 'highlightText',
                 searchText: searchText,
                 color: this.settings.highlightColor
-            }).catch(error => console.error('Error highlighting text:', error));
+            });
+            
+            console.log('Text highlighted successfully:', searchText.substring(0, 50) + '...');
+            
         } catch (error) {
-            console.error('Error in highlightTextOnPage:', error);
+            console.error('Error highlighting text:', error);
         }
     }
 
-    scrollToText(searchText) {
+    async scrollToText(searchText) {
         try {
-            chrome.tabs.sendMessage(this.currentTab.id, {
+            if (!this.currentTab || !this.currentTab.id) {
+                throw new Error('No active tab available');
+            }
+            
+            if (!searchText || searchText.trim().length === 0) {
+                console.warn('No search text provided for scrolling');
+                return;
+            }
+
+            await chrome.tabs.sendMessage(this.currentTab.id, {
                 action: 'scrollToText',
                 searchText: searchText
-            }).catch(error => console.error('Error scrolling to text:', error));
+            });
+            
+            console.log('Scrolled to text successfully:', searchText.substring(0, 50) + '...');
+            
         } catch (error) {
-            console.error('Error in scrollToText:', error);
+            console.error('Error scrolling to text:', error);
         }
     }
 
