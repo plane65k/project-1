@@ -12,6 +12,8 @@ const API_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
 let conversationHistory = [];
 let currentPageText = '';
+let pastedText = '';
+let textSource = 'page'; // 'page', 'pasted', or 'both'
 let apiKey = '';
 let selectedModel = DEFAULT_MODEL;
 let isBusy = false;
@@ -35,6 +37,12 @@ const closeHistoryBtn = document.getElementById('closeHistoryBtn');
 const historyList = document.getElementById('historyList');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 const clearBtn = document.getElementById('clearBtn');
+const pasteTextBtn = document.getElementById('pasteTextBtn');
+const pasteTextInput = document.getElementById('pasteTextInput');
+const sourcePageBtn = document.getElementById('sourcePageBtn');
+const sourcePastedBtn = document.getElementById('sourcePastedBtn');
+const sourceBothBtn = document.getElementById('sourceBothBtn');
+const textSourceIndicator = document.getElementById('textSourceIndicator');
 
 // Storage Helpers
 function storageGet(keys) {
@@ -90,6 +98,27 @@ questionInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') void sendQuestion();
 });
 
+pasteTextBtn.addEventListener('click', () => {
+  chrome.tabs.create({ url: 'https://text.onlineviewer.net/' });
+});
+
+pasteTextInput.addEventListener('input', () => {
+  const wasEmpty = !pastedText || !pastedText.trim();
+  pastedText = pasteTextInput.value;
+  const isEmpty = !pastedText.trim();
+
+  if (wasEmpty && !isEmpty) {
+    setTextSource('pasted');
+  } else {
+    refreshTextSourceControls();
+    saveCurrentConversation();
+  }
+});
+
+sourcePageBtn.addEventListener('click', () => setTextSource('page'));
+sourcePastedBtn.addEventListener('click', () => setTextSource('pasted'));
+sourceBothBtn.addEventListener('click', () => setTextSource('both'));
+
 historyBtn.addEventListener('click', openHistory);
 closeHistoryBtn.addEventListener('click', closeHistory);
 clearHistoryBtn.addEventListener('click', clearAllHistory);
@@ -111,6 +140,7 @@ document.addEventListener('keydown', (e) => {
 async function init() {
   await loadSettings();
   await loadConversations();
+  refreshTextSourceControls();
   
   void getPageText({ silent: true }).then((text) => {
     if (text) {
@@ -123,6 +153,55 @@ async function init() {
       }
     }
   });
+}
+
+// Text Source Management
+function setTextSource(source) {
+  textSource = source;
+  refreshTextSourceControls();
+  saveCurrentConversation();
+}
+
+function refreshTextSourceControls() {
+  const hasPasted = Boolean(pastedText && pastedText.trim());
+
+  sourcePastedBtn.disabled = !hasPasted;
+  sourceBothBtn.disabled = !hasPasted;
+
+  if (!hasPasted && (textSource === 'pasted' || textSource === 'both')) {
+    textSource = 'page';
+  }
+
+  sourcePageBtn.classList.toggle('active', textSource === 'page');
+  sourcePastedBtn.classList.toggle('active', textSource === 'pasted');
+  sourceBothBtn.classList.toggle('active', textSource === 'both');
+
+  if (textSource === 'page') {
+    textSourceIndicator.textContent = 'Page content';
+  } else if (textSource === 'pasted') {
+    textSourceIndicator.textContent = 'Pasted text';
+  } else if (textSource === 'both') {
+    textSourceIndicator.textContent = 'Page + pasted';
+  }
+}
+
+function getCurrentText() {
+  if (textSource === 'page') {
+    return `PAGE CONTENT:\n${currentPageText}`;
+  }
+
+  if (textSource === 'pasted') {
+    return `PASTED TEXT:\n${pastedText}`;
+  }
+
+  if (textSource === 'both') {
+    const parts = [];
+    if (currentPageText && currentPageText.trim()) parts.push(`PAGE CONTENT:\n${currentPageText}`);
+    if (pastedText && pastedText.trim()) parts.push(`PASTED TEXT:\n${pastedText}`);
+    return parts.join('\n\n---\n\n');
+  }
+
+  return `PAGE CONTENT:\n${currentPageText}`;
 }
 
 // Settings
@@ -187,6 +266,11 @@ function loadConversationIntoUI(conv) {
   activeConversationId = conv.id;
   conversationHistory = conv.messages || [];
   currentPageText = conv.pageText || '';
+  pastedText = conv.pastedText || '';
+  textSource = conv.textSource || 'page';
+
+  pasteTextInput.value = pastedText;
+  refreshTextSourceControls();
   
   messagesContainer.innerHTML = '';
   if (conversationHistory.length === 0) {
@@ -213,6 +297,10 @@ function showWelcome() {
 function startNewConversation() {
   activeConversationId = Date.now().toString();
   conversationHistory = [];
+  pastedText = '';
+  textSource = 'page';
+  pasteTextInput.value = '';
+  refreshTextSourceControls();
   messagesContainer.innerHTML = '';
   showWelcome();
   saveCurrentConversation();
@@ -239,6 +327,8 @@ async function saveCurrentConversation() {
     title: title,
     messages: conversationHistory,
     pageText: currentPageText,
+    pastedText: pastedText,
+    textSource: textSource,
     pageUrl: pageUrl,
     updatedAt: Date.now(),
     createdAt: (existingIndex >= 0 && conversations[existingIndex].createdAt) ? conversations[existingIndex].createdAt : Date.now()
@@ -401,6 +491,24 @@ async function getPageText({ silent = false } = {}) {
 }
 
 async function ensurePageText() {
+  if (textSource === 'pasted') {
+    if (!pastedText || !pastedText.trim()) {
+      showError('Please paste some text to analyze');
+      return false;
+    }
+    return true;
+  }
+
+  if (textSource === 'both' && pastedText && pastedText.trim()) {
+    // If we're using both, ensure page text is available (but allow pasted-only if extraction fails)
+    if (!currentPageText) {
+      const text = await getPageText({ silent: true });
+      if (text) currentPageText = text;
+    }
+    return true;
+  }
+
+  // Default to page text
   if (currentPageText) return true;
   const text = await getPageText();
   if (!text) return false;
@@ -485,16 +593,17 @@ async function sendQuestion() {
 
 async function callOpenRouter(userMessage) {
   try {
+    const contentText = getCurrentText();
     const systemPrompt =
       'You are avo, an AI page analyzer. ' +
-      'You will receive PAGE CONTENT extracted from the current webpage. ' +
+      'You will receive CONTENT to analyze. ' +
       'Answer questions and provide summaries using ONLY that content. ' +
-      'If the page does not contain the answer, say so clearly.';
+      'If the content does not contain the answer, say so clearly.';
 
     const messages = [
       {
         role: 'system',
-        content: `${systemPrompt}\n\nPAGE CONTENT:\n${currentPageText}`,
+        content: `${systemPrompt}\n\n${contentText}`,
       },
       ...conversationHistory,
       { role: 'user', content: userMessage },
