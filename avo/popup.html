@@ -130,15 +130,13 @@
           <!-- Paste Text Section -->
           <div class="avo-paste-section">
             <div class="avo-paste-header">
-              <span class="avo-paste-label">Paste content to analyze</span>
-              <button id="pasteTextBtn" class="avo-btn avo-btn-text avo-paste-btn" type="button">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button id="pasteTextBtn" class="avo-icon-btn" title="Toggle Paste Text" aria-label="Toggle Paste Text">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
                   <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
                   <path d="M8 12h8"/>
                   <path d="M8 16h8"/>
                 </svg>
-                Paste Text
               </button>
             </div>
 
@@ -153,13 +151,18 @@
             </div>
 
             <textarea
-              id="pasteTextInput"
-              class="avo-textarea"
-              placeholder="Paste text here..."
-              rows="3"
-              autocomplete="off"
+             id="pasteTextInput"
+             class="avo-textarea"
+             placeholder="Paste text here to analyze..."
+             rows="3"
+             autocomplete="off"
             ></textarea>
-          </div>
+            <div class="avo-paste-actions">
+             <button id="askPastedBtn" class="avo-btn avo-btn-text" type="button">Ask</button>
+             <button id="summarizePastedBtn" class="avo-btn avo-btn-text" type="button">Summarize</button>
+             <button id="clearPastedBtn" class="avo-btn avo-btn-text" type="button">Clear</button>
+            </div>
+            </div>
           
           <div class="avo-input-wrapper">
             <input
