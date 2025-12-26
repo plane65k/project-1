@@ -43,6 +43,9 @@ const sourcePageBtn = document.getElementById('sourcePageBtn');
 const sourcePastedBtn = document.getElementById('sourcePastedBtn');
 const sourceBothBtn = document.getElementById('sourceBothBtn');
 const textSourceIndicator = document.getElementById('textSourceIndicator');
+const askPastedBtn = document.getElementById('askPastedBtn');
+const summarizePastedBtn = document.getElementById('summarizePastedBtn');
+const clearPastedBtn = document.getElementById('clearPastedBtn');
 
 // Storage Helpers
 function storageGet(keys) {
@@ -99,7 +102,7 @@ questionInput.addEventListener('keypress', (e) => {
 });
 
 pasteTextBtn.addEventListener('click', () => {
-  chrome.tabs.create({ url: 'https://text.onlineviewer.net/' });
+  togglePasteSection();
 });
 
 pasteTextInput.addEventListener('input', () => {
@@ -113,6 +116,31 @@ pasteTextInput.addEventListener('input', () => {
     refreshTextSourceControls();
     saveCurrentConversation();
   }
+});
+
+askPastedBtn.addEventListener('click', () => {
+  if (!pastedText || !pastedText.trim()) {
+    showError('Please paste some text first');
+    return;
+  }
+  setTextSource('pasted');
+  questionInput.focus();
+  questionInput.placeholder = 'Ask about the pasted text...';
+});
+
+summarizePastedBtn.addEventListener('click', () => {
+  if (!pastedText || !pastedText.trim()) {
+    showError('Please paste some text first');
+    return;
+  }
+  void summarizePastedText();
+});
+
+clearPastedBtn.addEventListener('click', () => {
+  pasteTextInput.value = '';
+  pastedText = '';
+  refreshTextSourceControls();
+  saveCurrentConversation();
 });
 
 sourcePageBtn.addEventListener('click', () => setTextSource('page'));
@@ -141,6 +169,12 @@ async function init() {
   await loadSettings();
   await loadConversations();
   refreshTextSourceControls();
+  
+  // Hide paste section by default
+  const pasteSection = document.querySelector('.avo-paste-section');
+  if (pasteSection) {
+    pasteSection.classList.remove('avo-paste-visible');
+  }
   
   void getPageText({ silent: true }).then((text) => {
     if (text) {
@@ -182,6 +216,22 @@ function refreshTextSourceControls() {
     textSourceIndicator.textContent = 'Pasted text';
   } else if (textSource === 'both') {
     textSourceIndicator.textContent = 'Page + pasted';
+  }
+}
+
+function togglePasteSection() {
+  const pasteSection = document.querySelector('.avo-paste-section');
+  const isVisible = pasteSection.classList.contains('avo-paste-visible');
+  
+  if (isVisible) {
+    pasteSection.classList.remove('avo-paste-visible');
+    pasteTextBtn.setAttribute('title', 'Toggle Paste Text');
+    pasteTextBtn.setAttribute('aria-label', 'Toggle Paste Text');
+  } else {
+    pasteSection.classList.add('avo-paste-visible');
+    pasteTextBtn.setAttribute('title', 'Hide Paste Text');
+    pasteTextBtn.setAttribute('aria-label', 'Hide Paste Text');
+    pasteTextInput.focus();
   }
 }
 
@@ -539,6 +589,43 @@ async function summarizePage() {
     removeLoading();
     removeWelcome();
     addMessage('Page Summary', 'system');
+    addMessage(summary, 'ai');
+
+    conversationHistory.push({ role: 'user', content: userMessage });
+    conversationHistory.push({ role: 'assistant', content: summary });
+    saveCurrentConversation();
+  } catch (error) {
+    removeLoading();
+    showError(`Failed to summarize: ${error.message}`);
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function summarizePastedText() {
+  if (isBusy) return;
+
+  if (!apiKey) {
+    showError('Please set your API key in Settings first');
+    openSettings();
+    return;
+  }
+
+  if (!pastedText || !pastedText.trim()) {
+    showError('Please paste some text first');
+    return;
+  }
+
+  setBusy(true);
+  showLoading();
+
+  try {
+    const userMessage = `Please summarize this text:\n\n${pastedText}`;
+    const summary = await callOpenRouter(userMessage);
+
+    removeLoading();
+    removeWelcome();
+    addMessage('Text Summary', 'system');
     addMessage(summary, 'ai');
 
     conversationHistory.push({ role: 'user', content: userMessage });
