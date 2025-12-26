@@ -4,11 +4,13 @@ avo is an AI page analyzer Chrome extension with a Material 3-inspired design.
 
 ## Features
 
-- **Clean Material 3 UI** - Green and white color palette matching Google's design language
+- **Clean Material 3 UI** - Green and white color palette with smooth animations and fancy Google rounded shapes
+- **Persistent Conversation History** - All chats saved to local storage across sessions
 - **OpenRouter API Integration** - Connect to multiple AI models (GPT-4, Claude, Llama, etc.)
 - **Page Summarization** - Get concise summaries of any webpage
-- **Q&A with Context** - Ask questions about page content with conversation history
-- **Persistent Settings** - API key and model selection saved to chrome.storage.sync
+- **Q&A with Context** - Ask questions about page content with full history
+- **Larger Popup Interface** - Improved readability with a 550x750px window
+- **Persistent Settings** - API key and model selection saved to chrome.storage.local
 - **Smart Content Extraction** - Extracts readable text from any webpage
 
 ## Setup
