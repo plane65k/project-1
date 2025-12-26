@@ -10,6 +10,11 @@
   <div class="avo-container">
     <header class="avo-header">
       <div class="avo-header-title">
+        <button id="historyBtn" class="avo-icon-btn" title="History" aria-label="History">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+          </svg>
+        </button>
         <div class="avo-logo">avo</div>
       </div>
       <div class="avo-header-actions">
@@ -84,37 +89,61 @@
       </div>
     </div>
 
-    <div class="avo-messages" id="messagesContainer">
-      <div class="avo-welcome">
-        <div class="avo-welcome-icon">avo</div>
-        <h3>Welcome to avo</h3>
-        <p>Ask questions about this page or request a summary</p>
+    <div class="avo-main-container">
+      <!-- History Sidebar -->
+      <aside id="historySidebar" class="avo-sidebar">
+        <div class="avo-sidebar-header">
+          <h2>History</h2>
+          <button id="closeHistoryBtn" class="avo-icon-btn" aria-label="Close history">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6 6 18"/>
+              <path d="m6 6 12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div id="historyList" class="avo-history-list">
+          <!-- History items will be added here -->
+          <div class="avo-history-empty">No conversations yet</div>
+        </div>
+        <div class="avo-sidebar-footer">
+          <button id="clearHistoryBtn" class="avo-btn avo-btn-text">Clear All</button>
+        </div>
+      </aside>
+
+      <div class="avo-content">
+        <div class="avo-messages" id="messagesContainer">
+          <div class="avo-welcome">
+            <div class="avo-welcome-icon">avo</div>
+            <h3>Welcome to avo</h3>
+            <p>Ask questions about this page or request a summary</p>
+          </div>
+        </div>
+
+        <footer class="avo-footer">
+          <button id="summarizeBtn" class="avo-btn avo-btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Summarize Page
+          </button>
+          <div class="avo-input-wrapper">
+            <input
+              type="text"
+              id="questionInput"
+              placeholder="Ask about this page..."
+              class="avo-input avo-input-large"
+              autocomplete="off"
+            >
+            <button id="sendBtn" class="avo-btn avo-btn-send" aria-label="Send message">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2 11 13"/>
+                <path d="M22 2 15 22l-3-9-9-3 19-5z"/>
+              </svg>
+            </button>
+          </div>
+        </footer>
       </div>
     </div>
-
-    <footer class="avo-footer">
-      <button id="summarizeBtn" class="avo-btn avo-btn-secondary">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-        Summarize Page
-      </button>
-      <div class="avo-input-wrapper">
-        <input
-          type="text"
-          id="questionInput"
-          placeholder="Ask about this page..."
-          class="avo-input avo-input-large"
-          autocomplete="off"
-        >
-        <button id="sendBtn" class="avo-btn avo-btn-send" aria-label="Send message">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 2 11 13"/>
-            <path d="M22 2 15 22l-3-9-9-3 19-5z"/>
-          </svg>
-        </button>
-      </div>
-    </footer>
   </div>
 
   <script src="popup.js"></script>
