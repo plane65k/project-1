@@ -5,7 +5,7 @@ const STORAGE_KEYS = {
   model: 'avoModel',
 };
 
-const DEFAULT_MODEL = 'gpt-3.5-turbo';
+const DEFAULT_MODEL = 'openai/gpt-3.5-turbo';
 const API_ENDPOINT = 'https://openrouter.io/api/v1/chat/completions';
 
 let conversationHistory = [];
@@ -102,6 +102,8 @@ async function loadSettings() {
   }
 
   modelSelect.value = selectedModel;
+
+  console.log('✅ Settings loaded:', { model: selectedModel, hasApiKey: !!apiKey });
 }
 
 async function saveSettings() {
@@ -241,46 +243,68 @@ async function sendQuestion() {
 }
 
 async function callOpenRouter(userMessage) {
-  const systemPrompt =
-    'You are avo, a Google Gemini-inspired AI page analyzer. ' +
-    'You will receive PAGE CONTENT extracted from the current webpage. ' +
-    'Answer questions and provide summaries using ONLY that content. ' +
-    'If the page does not contain the answer, say so clearly.';
+  try {
+    const systemPrompt =
+      'You are avo, a Google Gemini-inspired AI page analyzer. ' +
+      'You will receive PAGE CONTENT extracted from the current webpage. ' +
+      'Answer questions and provide summaries using ONLY that content. ' +
+      'If the page does not contain the answer, say so clearly.';
 
-  const messages = [
-    {
-      role: 'system',
-      content: `${systemPrompt}\n\nPAGE CONTENT:\n${currentPageText}`,
-    },
-    ...conversationHistory,
-    { role: 'user', content: userMessage },
-  ];
+    const messages = [
+      {
+        role: 'system',
+        content: `${systemPrompt}\n\nPAGE CONTENT:\n${currentPageText}`,
+      },
+      ...conversationHistory,
+      { role: 'user', content: userMessage },
+    ];
 
-  const response = await fetch(API_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'https://avo-extension.local',
-      'X-Title': 'avo',
-    },
-    body: JSON.stringify({
-      model: selectedModel,
-      messages,
-      max_tokens: 1000,
-    }),
-  });
+    console.log('🔄 Calling OpenRouter API...');
+    console.log('Model:', selectedModel);
+    console.log('API Key format:', apiKey ? (apiKey.substring(0, 20) + '...') : 'none');
 
-  const data = await response.json().catch(() => ({}));
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://github.com',
+        'X-Title': 'avo',
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        messages: messages,
+        max_tokens: 1000,
+        temperature: 0.7,
+      }),
+    });
 
-  if (!response.ok) {
-    const msg = data?.error?.message || data?.message || 'Unknown error';
-    throw new Error(`API error: ${response.status} - ${msg}`);
+    console.log('📊 Response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ API Error Response:', errorText);
+
+      try {
+        const errorData = JSON.parse(errorText);
+        throw new Error(`OpenRouter API error (${response.status}): ${errorData.error?.message || errorText}`);
+      } catch (e) {
+        throw new Error(`OpenRouter API error (${response.status}): ${errorText}`);
+      }
+    }
+
+    const data = await response.json();
+    console.log('✅ API Success! Response:', data);
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response format from OpenRouter');
+    }
+
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('💥 Full error:', error);
+    throw error;
   }
-
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) throw new Error('Unexpected API response');
-  return content;
 }
 
 function addMessage(text, sender) {
