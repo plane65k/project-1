@@ -354,6 +354,20 @@ function closeHistory() {
   historySidebar.classList.remove('avo-sidebar-open');
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isGoogleServiceUrl(url) {
+  return (
+    typeof url === 'string' &&
+    (url.includes('docs.google.com/document') ||
+      url.includes('docs.google.com/spreadsheets') ||
+      url.includes('docs.google.com/presentation') ||
+      url.includes('docs.google.com/forms'))
+  );
+}
+
 async function getPageText({ silent = false } = {}) {
   try {
     const tab = await queryActiveTab();
@@ -362,14 +376,21 @@ async function getPageText({ silent = false } = {}) {
       return null;
     }
 
-    const response = await sendMessageToTab(tab.id, { action: 'getPageText' });
-    const pageText = response?.pageText || null;
+    const retries = isGoogleServiceUrl(tab.url) ? 3 : 0;
 
-    if (!pageText && !silent) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const response = await sendMessageToTab(tab.id, { action: 'getPageText' });
+      const pageText = (response?.pageText || '').trim();
+
+      if (pageText) return pageText;
+      if (attempt < retries) await sleep(500 * (attempt + 1));
+    }
+
+    if (!silent) {
       showError('Could not extract page text from this page');
     }
 
-    return pageText;
+    return null;
   } catch (error) {
     if (!silent) {
       console.error('Error getting page text:', error);
