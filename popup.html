@@ -3,72 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>avo - AI Page Assistant</title>
+  <title>avo</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="avo-container">
-    <!-- Header -->
     <header class="avo-header">
-      <div class="avo-logo">
-        <div class="avo-icon"></div>
-        <h1>avo</h1>
-      </div>
+      <h1>avo</h1>
+      <button id="clearBtn" class="avo-clear-btn">Clear</button>
     </header>
-
-    <!-- Chat Area -->
-    <main class="avo-chat" id="chatArea">
-      <div class="avo-welcome">
-        <div class="avo-welcome-icon">🤖</div>
-        <h2>Welcome to avo</h2>
-        <p>Your AI assistant for understanding web content</p>
-      </div>
-    </main>
-
-    <!-- Action Buttons -->
-    <div class="avo-actions">
-      <button class="avo-btn avo-btn-primary" id="summarizeBtn">
-        <span class="avo-btn-icon">📄</span>
-        Summarize Page
-      </button>
-      <button class="avo-btn avo-btn-secondary" id="clearBtn">
-        <span class="avo-btn-icon">🔄</span>
-        Clear Chat
-      </button>
+    
+    <div class="avo-messages" id="messagesContainer">
+      <!-- Messages will be added here -->
     </div>
-
-    <!-- Input Area -->
-    <footer class="avo-input-area">
-      <div class="avo-input-wrapper">
+    
+    <footer class="avo-footer">
+      <button id="summarizeBtn" class="avo-btn-primary">Summarize Page</button>
+      <div class="avo-input-group">
         <input 
           type="text" 
-          id="userInput" 
-          placeholder="Ask about this page..."
+          id="questionInput" 
+          placeholder="Ask about this page..." 
           class="avo-input"
-          autocomplete="off"
         >
-        <button id="sendBtn" class="avo-send-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="m22 2-7 20-4-9-9-4 20-7z"/>
-          </svg>
-        </button>
+        <button id="sendBtn" class="avo-btn-send">Send</button>
       </div>
     </footer>
-
-    <!-- Loading State -->
-    <div id="loading" class="avo-loading avo-hidden">
-      <div class="avo-loading-dots">
-        <div class="avo-dot"></div>
-        <div class="avo-dot"></div>
-        <div class="avo-dot"></div>
-      </div>
-      <p>Thinking...</p>
-    </div>
-
-    <!-- Error Message -->
-    <div id="errorMessage" class="avo-error avo-hidden"></div>
   </div>
-
+  
   <script src="popup.js"></script>
 </body>
 </html>
