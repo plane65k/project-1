@@ -6,7 +6,7 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_MODEL = 'openai/gpt-3.5-turbo';
-const API_ENDPOINT = 'https://openrouter.io/api/v1/chat/completions';
+const API_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
 let conversationHistory = [];
 let currentPageText = '';
@@ -79,7 +79,9 @@ questionInput.addEventListener('keypress', (e) => {
 });
 
 settingsModal.addEventListener('click', (e) => {
-  if (e.target === settingsModal) closeSettings();
+  if (e.target === settingsModal || e.target.classList.contains('avo-modal-overlay')) {
+    closeSettings();
+  }
 });
 
 document.addEventListener('keydown', (e) => {
@@ -108,6 +110,7 @@ async function loadSettings() {
   console.log('✅ [DEBUG] API Key present:', !!apiKey);
   console.log('✅ [DEBUG] API Key format:', apiKey ? (apiKey.startsWith('sk-or-v1-') ? 'Correct (sk-or-v1-)' : `Unexpected prefix: ${apiKey.substring(0, 10)}...`) : 'MISSING');
   console.log('✅ [DEBUG] Default model:', DEFAULT_MODEL);
+  console.log('✅ [DEBUG] API Endpoint:', API_ENDPOINT);
 }
 
 async function saveSettings() {
@@ -134,7 +137,8 @@ async function saveSettings() {
 
     console.log('✅ [DEBUG] Settings saved successfully');
     closeSettings();
-    addMessage('✓ Settings saved!', 'ai');
+    removeWelcome();
+    addMessage('Settings saved!', 'system');
   } catch (err) {
     console.error('❌ [ERROR] Failed to save settings:', err);
     showError(`Failed to save settings: ${err.message}`);
@@ -142,12 +146,12 @@ async function saveSettings() {
 }
 
 function openSettings() {
-  settingsModal.classList.remove('hidden');
+  settingsModal.classList.add('avo-modal-open');
   apiKeyInput.focus();
 }
 
 function closeSettings() {
-  settingsModal.classList.add('hidden');
+  settingsModal.classList.remove('avo-modal-open');
 }
 
 async function getPageText({ silent = false } = {}) {
@@ -203,6 +207,8 @@ async function summarizePage() {
     const summary = await callOpenRouter(userMessage);
 
     removeLoading();
+    removeWelcome();
+    addMessage('Page Summary', 'system');
     addMessage(summary, 'ai');
 
     conversationHistory.push({ role: 'user', content: userMessage });
@@ -230,6 +236,7 @@ async function sendQuestion() {
   const ok = await ensurePageText();
   if (!ok) return;
 
+  removeWelcome();
   addMessage(question, 'user');
   questionInput.value = '';
 
@@ -255,7 +262,7 @@ async function sendQuestion() {
 async function callOpenRouter(userMessage) {
   try {
     const systemPrompt =
-      'You are avo, a Google Gemini-inspired AI page analyzer. ' +
+      'You are avo, an AI page analyzer. ' +
       'You will receive PAGE CONTENT extracted from the current webpage. ' +
       'Answer questions and provide summaries using ONLY that content. ' +
       'If the page does not contain the answer, say so clearly.';
@@ -342,15 +349,24 @@ async function callOpenRouter(userMessage) {
   }
 }
 
+function removeWelcome() {
+  const welcome = messagesContainer.querySelector('.avo-welcome');
+  if (welcome) welcome.remove();
+}
+
 function addMessage(text, sender) {
   const messageEl = document.createElement('div');
-  messageEl.className = `avo-message ${sender}`;
+  messageEl.className = `avo-message avo-message-${sender}`;
 
-  const contentEl = document.createElement('div');
-  contentEl.className = 'avo-message-content';
-  contentEl.textContent = text;
+  if (sender === 'system') {
+    messageEl.innerHTML = `<div class="avo-message-label">${text}</div>`;
+  } else {
+    const contentEl = document.createElement('div');
+    contentEl.className = 'avo-message-content';
+    contentEl.textContent = text;
+    messageEl.appendChild(contentEl);
+  }
 
-  messageEl.appendChild(contentEl);
   messagesContainer.appendChild(messageEl);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
@@ -359,15 +375,20 @@ function showLoading() {
   removeLoading();
 
   const loadingEl = document.createElement('div');
-  loadingEl.className = 'avo-loading';
+  loadingEl.className = 'avo-message avo-message-ai avo-loading';
   loadingEl.id = 'loadingIndicator';
 
+  const contentEl = document.createElement('div');
+  contentEl.className = 'avo-message-content';
+  
   for (let i = 0; i < 3; i++) {
-    const dot = document.createElement('div');
+    const dot = document.createElement('span');
     dot.className = 'avo-loading-dot';
-    loadingEl.appendChild(dot);
+    dot.style.animationDelay = `${i * 0.15}s`;
+    contentEl.appendChild(dot);
   }
 
+  loadingEl.appendChild(contentEl);
   messagesContainer.appendChild(loadingEl);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
@@ -379,9 +400,9 @@ function removeLoading() {
 
 function showError(message) {
   const errorEl = document.createElement('div');
-  errorEl.className = 'avo-error';
-  errorEl.textContent = message;
-
+  errorEl.className = 'avo-message avo-message-error';
+  errorEl.innerHTML = `<div class="avo-message-content">${message}</div>`;
+  
   messagesContainer.appendChild(errorEl);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
@@ -389,7 +410,20 @@ function showError(message) {
 function clearConversation() {
   conversationHistory = [];
   currentPageText = '';
+  
+  // Clear all messages except welcome
   messagesContainer.innerHTML = '';
+  
+  // Re-add welcome
+  const welcomeEl = document.createElement('div');
+  welcomeEl.className = 'avo-welcome';
+  welcomeEl.innerHTML = `
+    <div class="avo-welcome-icon">avo</div>
+    <h3>Welcome to avo</h3>
+    <p>Ask questions about this page or request a summary</p>
+  `;
+  messagesContainer.appendChild(welcomeEl);
+  
   questionInput.value = '';
 }
 

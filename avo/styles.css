@@ -4,96 +4,190 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* Material 3 Green Color Palette */
+  --md-sys-color-primary: #1F8C44;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #B1F5C8;
+  --md-sys-color-on-primary-container: #002108;
+  
+  --md-sys-color-secondary: #4D6357;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #CFE9DA;
+  --md-sys-color-on-secondary-container: #092016;
+  
+  --md-sys-color-background: #FFFFFF;
+  --md-sys-color-on-background: #191C1A;
+  
+  --md-sys-color-surface: #F8F8F8;
+  --md-sys-color-on-surface: #191C1A;
+  --md-sys-color-surface-variant: #DBE5DE;
+  --md-sys-color-on-surface-variant: #404944;
+  
+  --md-sys-color-error: #BA1A1A;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #FFDAD6;
+  --md-sys-color-on-error-container: #410002;
+  
+  --md-sys-color-outline: #707973;
+  --md-sys-color-outline-variant: #BFC9C2;
+  
+  /* Elevation shadows */
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --elevation-2: 0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+  --elevation-3: 0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.10);
+  
+  /* Animation timing */
+  --motion-duration-short: 150ms;
+  --motion-duration-medium: 250ms;
+  --motion-easing-standard: cubic-bezier(0.2, 0.0, 0.0, 1.0);
+  --motion-easing-emphasized: cubic-bezier(0.2, 0.0, 0.0, 1.0);
+}
+
 body {
-  width: 500px;
-  height: 700px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: #1a1a1a;
-  color: #ffffff;
+  width: 480px;
+  height: 640px;
+  font-family: 'Google Sans', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
   overflow: hidden;
+  line-height: 1.5;
 }
 
 .avo-container {
   display: flex;
   flex-direction: column;
-  width: 500px;
-  height: 700px;
-  background-color: #1a1a1a;
+  width: 100%;
+  height: 100%;
+  background-color: var(--md-sys-color-background);
   position: relative;
 }
 
+/* Header */
 .avo-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #333;
-  background-color: #1a1a1a;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--md-sys-color-surface-variant);
+  background-color: var(--md-sys-color-background);
 }
 
-.avo-header h1 {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.avo-header-buttons {
+.avo-header-title {
   display: flex;
-  gap: 8px;
   align-items: center;
 }
 
-.avo-settings-btn {
+.avo-logo {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--md-sys-color-primary);
+  letter-spacing: -0.5px;
+}
+
+.avo-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* Icon Buttons */
+.avo-icon-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
   background: transparent;
-  border: 1px solid #555;
-  color: #999;
-  padding: 6px 10px;
-  border-radius: 4px;
+  color: var(--md-sys-color-on-surface-variant);
+  border-radius: 50%;
   cursor: pointer;
-  font-size: 16px;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--motion-duration-short) var(--motion-easing-standard);
 }
 
-.avo-settings-btn:hover {
-  background-color: #2a2a2a;
-  color: #fff;
+.avo-icon-btn:hover {
+  background-color: var(--md-sys-color-surface-variant);
 }
 
-.avo-clear-btn {
-  background: transparent;
-  border: 1px solid #555;
-  color: #999;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s;
+.avo-icon-btn:focus {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
 }
 
-.avo-clear-btn:hover {
-  background-color: #2a2a2a;
-  color: #fff;
-}
-
+/* Messages Container */
 .avo-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background-color: #1a1a1a;
+  background-color: var(--md-sys-color-background);
 }
 
+/* Scrollbar Styling */
+.avo-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.avo-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.avo-messages::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline-variant);
+  border-radius: 3px;
+}
+
+.avo-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-outline);
+}
+
+/* Welcome Message */
+.avo-welcome {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.avo-welcome-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, #2AA54F 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 500;
+  box-shadow: var(--elevation-2);
+}
+
+.avo-welcome h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-background);
+}
+
+.avo-welcome p {
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Messages */
 .avo-message {
   display: flex;
-  gap: 8px;
-  animation: slideIn 0.3s ease-out;
+  animation: messageSlideIn var(--motion-duration-medium) var(--motion-easing-emphasized);
 }
 
-@keyframes slideIn {
+@keyframes messageSlideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -101,41 +195,79 @@ body {
   }
 }
 
-.avo-message.user {
+.avo-message-content {
+  padding: 12px 16px;
+  border-radius: 20px;
+  max-width: 90%;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.avo-message-user {
   justify-content: flex-end;
 }
 
-.avo-message-content {
-  max-width: 85%;
-  padding: 12px 16px;
-  border-radius: 8px;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  line-height: 1.4;
+.avo-message-user .avo-message-content {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border-bottom-right-radius: 4px;
 }
 
-.avo-message.ai .avo-message-content {
-  background-color: #2a2a2a;
-  color: #e0e0e0;
+.avo-message-ai {
+  justify-content: flex-start;
 }
 
-.avo-message.user .avo-message-content {
-  background-color: #5865f2;
-  color: #ffffff;
+.avo-message-ai .avo-message-content {
+  background-color: var(--md-sys-color-surface-variant);
+  color: var(--md-sys-color-on-surface);
+  border-bottom-left-radius: 4px;
 }
 
-.avo-loading {
+.avo-message-system {
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.avo-message-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.avo-message-error {
+  justify-content: center;
+}
+
+.avo-message-error .avo-message-content {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+/* Loading Indicator */
+.avo-loading .avo-message-content {
+  background-color: var(--md-sys-color-surface-variant);
+  padding: 16px 20px;
   display: flex;
   gap: 4px;
-  padding: 12px 16px;
+  align-items: center;
 }
 
 .avo-loading-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #666;
-  animation: pulse 1.4s infinite;
+  background-color: var(--md-sys-color-primary);
+  animation: loadingPulse 1.4s ease-in-out infinite;
+}
+
+.avo-loading-dot:nth-child(1) {
+  animation-delay: 0s;
 }
 
 .avo-loading-dot:nth-child(2) {
@@ -146,91 +278,127 @@ body {
   animation-delay: 0.4s;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.5;
+@keyframes loadingPulse {
+  0%, 80%, 100% {
+    opacity: 0.4;
+    transform: scale(0.8);
   }
-  50% {
+  40% {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
+/* Footer */
 .avo-footer {
-  padding: 16px;
-  border-top: 1px solid #333;
-  background-color: #1a1a1a;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--md-sys-color-surface-variant);
+  background-color: var(--md-sys-color-background);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-.avo-input-group {
-  display: flex;
-  gap: 8px;
-}
-
-.avo-input {
-  flex: 1;
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-  color: #fff;
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: border-color 0.2s;
-}
-
-.avo-input:focus {
-  outline: none;
-  border-color: #5865f2;
-}
-
-.avo-btn-primary,
-.avo-btn-send {
-  padding: 10px 16px;
+/* Buttons */
+.avo-btn {
+  padding: 10px 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 20px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all var(--motion-duration-short) var(--motion-easing-standard);
+  font-family: inherit;
 }
 
-.avo-btn-primary {
-  background-color: #5865f2;
-  color: white;
-  width: 100%;
+.avo-btn:focus {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
 }
 
-.avo-btn-primary:hover {
-  background-color: #4752c4;
-}
-
-.avo-btn-primary:disabled {
-  background-color: #3a3f5c;
+.avo-btn:disabled {
+  opacity: 0.38;
   cursor: not-allowed;
 }
 
+.avo-btn-primary {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.avo-btn-primary:hover:not(:disabled) {
+  background-color: #1A7539;
+  box-shadow: var(--elevation-1);
+}
+
+.avo-btn-secondary {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  width: 100%;
+}
+
+.avo-btn-secondary:hover:not(:disabled) {
+  background-color: #C0E3D2;
+}
+
 .avo-btn-send {
-  background-color: #5865f2;
-  color: white;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.avo-btn-send:hover {
-  background-color: #4752c4;
+.avo-btn-send:hover:not(:disabled) {
+  background-color: #1A7539;
+  box-shadow: var(--elevation-1);
 }
 
-.avo-error {
-  background-color: #3a2a2a;
-  border-left: 3px solid #ff4444;
-  padding: 12px;
-  border-radius: 4px;
-  color: #ff8888;
-  font-size: 13px;
+/* Input Wrapper */
+.avo-input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
 }
 
-/* Settings Modal Styles */
+/* Inputs */
+.avo-input,
+.avo-select {
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline);
+  color: var(--md-sys-color-on-surface);
+  padding: 12px 16px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all var(--motion-duration-short) var(--motion-easing-standard);
+}
+
+.avo-input:focus,
+.avo-select:focus {
+  outline: none;
+  border-color: var(--md-sys-color-primary);
+  border-width: 2px;
+  padding: 11px 15px;
+}
+
+.avo-input::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.avo-input-large {
+  flex: 1;
+}
+
+/* Settings Modal */
 .avo-modal {
   display: none;
   position: absolute;
@@ -238,22 +406,26 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
   z-index: 1000;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  animation: fadeIn 0.2s ease-out;
 }
 
-.avo-modal.hidden {
-  display: none;
-}
-
-.avo-modal:not(.hidden) {
+.avo-modal.avo-modal-open {
   display: flex;
 }
 
-@keyframes fadeIn {
+.avo-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.32);
+  animation: fadeInOverlay var(--motion-duration-medium) var(--motion-easing-emphasized);
+}
+
+@keyframes fadeInOverlay {
   from {
     opacity: 0;
   }
@@ -263,111 +435,156 @@ body {
 }
 
 .avo-modal-content {
-  background-color: #2a2a2a;
-  border-radius: 8px;
-  width: 90%;
-  max-height: 80%;
+  background-color: var(--md-sys-color-background);
+  border-radius: 28px 28px 0 0;
+  width: 100%;
+  max-height: 85%;
   overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--elevation-3);
+  animation: slideUp var(--motion-duration-medium) var(--motion-easing-emphasized);
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Modal Scrollbar */
+.avo-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.avo-modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.avo-modal-content::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline-variant);
+  border-radius: 3px;
 }
 
 .avo-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #444;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--md-sys-color-surface-variant);
 }
 
 .avo-modal-header h2 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-background);
 }
 
-.avo-modal-close {
-  background: transparent;
+.avo-close-btn {
+  width: 36px;
+  height: 36px;
   border: none;
-  color: #999;
-  font-size: 28px;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  border-radius: 50%;
   cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s;
+  transition: all var(--motion-duration-short) var(--motion-easing-standard);
 }
 
-.avo-modal-close:hover {
-  color: #fff;
+.avo-close-btn:hover {
+  background-color: var(--md-sys-color-surface);
+}
+
+.avo-close-btn:focus {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
 }
 
 .avo-modal-body {
-  padding: 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-.avo-settings-group {
+.avo-form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.avo-settings-group label {
+.avo-form-group label {
   font-size: 14px;
   font-weight: 500;
-  color: #e0e0e0;
+  color: var(--md-sys-color-on-surface);
 }
 
-.avo-settings-input,
-.avo-settings-select {
-  background-color: #1a1a1a;
-  border: 1px solid #444;
-  color: #fff;
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: border-color 0.2s;
-  font-family: inherit;
+.avo-input,
+.avo-select {
+  width: 100%;
 }
 
-.avo-settings-input:focus,
-.avo-settings-select:focus {
-  outline: none;
-  border-color: #5865f2;
-}
-
-.avo-settings-select {
+.avo-select {
   cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23404944' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 40px;
 }
 
-.avo-settings-select option {
-  background-color: #2a2a2a;
-  color: #fff;
+.avo-select option {
+  background-color: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+  padding: 12px 16px;
 }
 
 .avo-help-text {
   font-size: 12px;
-  color: #888;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.4;
+}
+
+.avo-help-text a {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+}
+
+.avo-help-text a:hover {
+  text-decoration: underline;
 }
 
 .avo-modal-footer {
-  padding: 20px;
-  border-top: 1px solid #444;
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--md-sys-color-surface-variant);
   display: flex;
   gap: 8px;
   justify-content: flex-end;
 }
 
-.avo-modal-footer button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
+/* Responsive adjustments for smaller popup */
+@media (max-height: 600px) {
+  body {
+    height: 600px;
+  }
+  
+  .avo-messages {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  
+  .avo-welcome {
+    padding: 24px 16px;
+  }
+  
+  .avo-footer {
+    padding: 10px 12px 14px;
+  }
 }
