@@ -6,7 +6,7 @@
 
 body {
   width: 500px;
-  min-height: 700px;
+  height: 700px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background-color: #1a1a1a;
   color: #ffffff;
@@ -16,9 +16,10 @@ body {
 .avo-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  max-width: 500px;
+  width: 500px;
+  height: 700px;
   background-color: #1a1a1a;
+  position: relative;
 }
 
 .avo-header {
@@ -33,6 +34,28 @@ body {
 .avo-header h1 {
   font-size: 20px;
   font-weight: 600;
+}
+
+.avo-header-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.avo-settings-btn {
+  background: transparent;
+  border: 1px solid #555;
+  color: #999;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.avo-settings-btn:hover {
+  background-color: #2a2a2a;
+  color: #fff;
 }
 
 .avo-clear-btn {
@@ -87,6 +110,7 @@ body {
   padding: 12px 16px;
   border-radius: 8px;
   word-wrap: break-word;
+  white-space: pre-wrap;
   line-height: 1.4;
 }
 
@@ -123,7 +147,8 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
   }
   50% {
@@ -161,7 +186,8 @@ body {
   border-color: #5865f2;
 }
 
-.avo-btn-primary, .avo-btn-send {
+.avo-btn-primary,
+.avo-btn-send {
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
@@ -204,18 +230,144 @@ body {
   font-size: 13px;
 }
 
-.avo-copy-btn {
-  background: transparent;
-  border: 1px solid #555;
-  color: #999;
-  padding: 4px 8px;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 11px;
-  margin-top: 8px;
+/* Settings Modal Styles */
+.avo-modal {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.avo-copy-btn:hover {
+.avo-modal.hidden {
+  display: none;
+}
+
+.avo-modal:not(.hidden) {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.avo-modal-content {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  width: 90%;
+  max-height: 80%;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.avo-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #444;
+}
+
+.avo-modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.avo-modal-close {
+  background: transparent;
+  border: none;
+  color: #999;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.avo-modal-close:hover {
+  color: #fff;
+}
+
+.avo-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.avo-settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.avo-settings-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+
+.avo-settings-input,
+.avo-settings-select {
+  background-color: #1a1a1a;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.avo-settings-input:focus,
+.avo-settings-select:focus {
+  outline: none;
+  border-color: #5865f2;
+}
+
+.avo-settings-select {
+  cursor: pointer;
+}
+
+.avo-settings-select option {
   background-color: #2a2a2a;
   color: #fff;
+}
+
+.avo-help-text {
+  font-size: 12px;
+  color: #888;
+}
+
+.avo-modal-footer {
+  padding: 20px;
+  border-top: 1px solid #444;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.avo-modal-footer button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
 }
