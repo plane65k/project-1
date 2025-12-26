@@ -221,16 +221,19 @@ function refreshTextSourceControls() {
 
 function togglePasteSection() {
   const pasteSection = document.querySelector('.avo-paste-section');
+  const pasteBtn = document.getElementById('pasteTextBtn');
   const isVisible = pasteSection.classList.contains('avo-paste-visible');
   
   if (isVisible) {
     pasteSection.classList.remove('avo-paste-visible');
-    pasteTextBtn.setAttribute('title', 'Toggle Paste Text');
-    pasteTextBtn.setAttribute('aria-label', 'Toggle Paste Text');
+    pasteBtn.classList.remove('avo-active');
+    pasteBtn.setAttribute('title', 'Toggle Paste Text');
+    pasteBtn.setAttribute('aria-label', 'Toggle Paste Text');
   } else {
     pasteSection.classList.add('avo-paste-visible');
-    pasteTextBtn.setAttribute('title', 'Hide Paste Text');
-    pasteTextBtn.setAttribute('aria-label', 'Hide Paste Text');
+    pasteBtn.classList.add('avo-active');
+    pasteBtn.setAttribute('title', 'Hide Paste Text');
+    pasteBtn.setAttribute('aria-label', 'Hide Paste Text');
     pasteTextInput.focus();
   }
 }
