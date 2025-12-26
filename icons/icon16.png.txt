@@ -1,3 +1,0 @@
-# Icon placeholder - 16x16
-# Create a simple blue circle with white "A" using any image editor
-# Or use ImageMagick: convert -size 16x16 xc:none -fill '#1a73e8' -draw 'circle 8,8 8,2' -fill white -pointsize 8 -gravity center -annotate +0+0 'A' icon16.png

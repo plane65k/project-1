@@ -1,298 +1,178 @@
-class AvoAssistant {
-  constructor() {
-    this.chatArea = document.getElementById('chatArea');
-    this.userInput = document.getElementById('userInput');
-    this.sendBtn = document.getElementById('sendBtn');
-    this.loading = document.getElementById('loading');
-    this.errorMessage = document.getElementById('errorMessage');
-    this.summarizeBtn = document.getElementById('summarizeBtn');
-    this.clearBtn = document.getElementById('clearBtn');
-    
-    this.pageContent = '';
-    this.conversationHistory = [];
-    
-    this.init();
-  }
+'use strict';
 
-  init() {
-    this.setupEventListeners();
-    this.loadPageContent();
-    this.loadApiKey();
-  }
+let conversationHistory = [];
 
-  setupEventListeners() {
-    // Send message on button click
-    this.sendBtn.addEventListener('click', () => this.handleSendMessage());
-    
-    // Send message on Enter key
-    this.userInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        this.handleSendMessage();
-      }
-    });
+const API_KEY = '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';
+const API_ENDPOINT = 'https://openrouter.io/api/v1/chat/completions';
 
-    // Summarize page
-    this.summarizeBtn.addEventListener('click', () => this.summarizePage());
-    
-    // Clear chat
-    this.clearBtn.addEventListener('click', () => this.clearChat());
-    
-    // Focus input on load
-    this.userInput.focus();
-  }
+let currentPageText = '';
 
-  async loadPageContent() {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      if (!tab) {
-        throw new Error('No active tab found');
-      }
+document.getElementById('summarizeBtn').addEventListener('click', summarizePage);
+document.getElementById('sendBtn').addEventListener('click', sendQuestion);
+document.getElementById('clearBtn').addEventListener('click', clearConversation);
+document.getElementById('questionInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendQuestion();
+});
 
-      // Check if content script is injected, if not, inject it
-      try {
-        await chrome.tabs.sendMessage(tab.id, { action: 'ping' });
-      } catch {
-        // Content script not injected, inject it
-        await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          files: ['content.js']
-        });
-      }
-
-      // Get page content
-      const response = await chrome.tabs.sendMessage(tab.id, { action: 'getPageContent' });
-      
-      if (response && response.content) {
-        this.pageContent = response.content;
-        console.log('Page content loaded successfully. Length:', this.pageContent.length);
-      } else {
-        throw new Error('Failed to extract page content');
-      }
-    } catch (error) {
-      console.error('Error loading page content:', error);
-      this.showError('Failed to load page content');
-    }
-  }
-
-  async loadApiKey() {
-    try {
-      const result = await chrome.storage.sync.get(['openRouterApiKey']);
-      this.apiKey = result.openRouterApiKey || null;
-    } catch (error) {
-      console.error('Error loading API key:', error);
-      this.apiKey = null;
-    }
-  }
-
-  getApiKey() {
-    return this.apiKey || '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';
-  }
-
-  async handleSendMessage() {
-    const message = this.userInput.value.trim();
-    
-    if (!message) return;
-
-    if (!this.pageContent) {
-      this.showError('Page content not loaded yet. Please wait...');
-      return;
+async function getPageText() {
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tabs[0]) {
+      showError('No active tab found');
+      return null;
     }
 
-    // Add user message to chat
-    this.addMessage(message, 'user');
-    this.userInput.value = '';
-    this.userInput.disabled = true;
-    this.sendBtn.disabled = true;
-
-    // Show loading
-    this.showLoading(true);
-
-    try {
-      // Get AI response
-      const response = await this.askQuestion(message);
-      
-      // Add AI response to chat
-      this.addMessage(response, 'ai');
-      
-    } catch (error) {
-      console.error('Error getting AI response:', error);
-      this.showError(error.message || 'Failed to get response from AI');
-    } finally {
-      this.showLoading(false);
-      this.userInput.disabled = false;
-      this.sendBtn.disabled = false;
-      this.userInput.focus();
-    }
-  }
-
-  async summarizePage() {
-    if (!this.pageContent) {
-      this.showError('Page content not loaded yet. Please wait...');
-      return;
-    }
-
-    // Add system message
-    this.addMessage('Summarizing this page...', 'system');
-    this.showLoading(true);
-    this.summarizeBtn.disabled = true;
-
-    try {
-      const summary = await this.callOpenRouter(
-        this.pageContent,
-        'Summarize this page content in a clear, concise way. Focus on the main points and key information.'
-      );
-      
-      this.addMessage(`📄 **Page Summary**\n\n${summary}`, 'ai');
-      
-    } catch (error) {
-      console.error('Error summarizing page:', error);
-      this.showError(error.message || 'Failed to summarize page');
-    } finally {
-      this.showLoading(false);
-      this.summarizeBtn.disabled = false;
-    }
-  }
-
-  async askQuestion(question) {
-    return await this.callOpenRouter(this.pageContent, question);
-  }
-
-  async callOpenRouter(content, question) {
-    const apiKey = this.getApiKey();
-    
-    const messages = [
-      {
-        role: 'system',
-        content: 'You are a helpful AI assistant that answers questions about web page content. Be concise, accurate, and helpful. When summarizing or answering questions, focus on extracting key information clearly.'
-      },
-      {
-        role: 'user',
-        content: `Page content:\n${content.substring(0, 8000)}\n\nQuestion: ${question}`
-      }
-    ];
-
-    const response = await fetch('https://openrouter.io/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'meta-llama/llama-2-70b-chat',
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1000
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`OpenRouter API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid API response format');
-    }
-
-    return data.choices[0].message.content;
-  }
-
-  addMessage(content, sender) {
-    // Remove welcome message on first message
-    const welcome = this.chatArea.querySelector('.avo-welcome');
-    if (welcome) {
-      welcome.remove();
-    }
-
-    // Remove system messages
-    if (sender === 'system') {
-      const systemMessage = this.chatArea.querySelector('.avo-message-system');
-      if (systemMessage) {
-        systemMessage.remove();
-      }
-    }
-
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `avo-message avo-message-${sender}`;
-    
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    messageDiv.innerHTML = `
-      <div class="avo-message-content">
-        ${this.formatMessage(content)}
-      </div>
-      <div class="avo-timestamp">${timestamp}</div>
-    `;
-
-    if (sender === 'ai') {
-      // Add copy button for AI messages
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'avo-copy-btn';
-      copyBtn.innerHTML = '📋 Copy';
-      copyBtn.addEventListener('click', () => this.copyToClipboard(content));
-      messageDiv.querySelector('.avo-message-content').appendChild(copyBtn);
-    }
-
-    if (sender === 'system') {
-      messageDiv.classList.add('avo-message-system');
-    }
-
-    this.chatArea.appendChild(messageDiv);
-    this.chatArea.scrollTop = this.chatArea.scrollHeight;
-  }
-
-  formatMessage(content) {
-    // Convert markdown-like bold text to HTML
-    return content.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                  .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                  .replace(/\n/g, '<br>');
-  }
-
-  async copyToClipboard(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-      this.showError('Copied to clipboard!', 'success');
-      setTimeout(() => this.hideError(), 2000);
-    } catch (error) {
-      console.error('Copy failed:', error);
-      this.showError('Failed to copy to clipboard');
-    }
-  }
-
-  clearChat() {
-    this.chatArea.innerHTML = `
-      <div class="avo-welcome">
-        <div class="avo-welcome-icon">🤖</div>
-        <h2>Welcome to avo</h2>
-        <p>Your AI assistant for understanding web content</p>
-      </div>
-    `;
-    this.conversationHistory = [];
-    this.hideError();
-  }
-
-  showLoading(show) {
-    this.loading.classList.toggle('avo-hidden', !show);
-  }
-
-  showError(message, type = 'error') {
-    this.errorMessage.textContent = message;
-    this.errorMessage.className = `avo-error avo-${type}`;
-    this.errorMessage.classList.remove('avo-hidden');
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => this.hideError(), 5000);
-  }
-
-  hideError() {
-    this.errorMessage.classList.add('avo-hidden');
+    const response = await chrome.tabs.sendMessage(tabs[0].id, { action: 'getPageText' });
+    return response?.pageText || null;
+  } catch (error) {
+    console.error('Error getting page text:', error);
+    showError('Could not extract page text from this page');
+    return null;
   }
 }
 
-// Initialize the extension when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  new AvoAssistant();
+async function summarizePage() {
+  if (!currentPageText) {
+    currentPageText = await getPageText();
+    if (!currentPageText) return;
+  }
+
+  addMessage('Summarizing page...', 'ai');
+  removeLastMessage();
+  showLoading();
+
+  try {
+    const summary = await callOpenRouter(
+      `Please provide a concise summary of the following page content:\n\n${currentPageText}`
+    );
+    
+    removeLoading();
+    addMessage(summary, 'ai');
+    conversationHistory.push({ role: 'assistant', content: summary });
+  } catch (error) {
+    removeLoading();
+    showError('Failed to summarize: ' + error.message);
+  }
+}
+
+async function sendQuestion() {
+  const input = document.getElementById('questionInput');
+  const question = input.value.trim();
+
+  if (!question) return;
+
+  if (!currentPageText) {
+    currentPageText = await getPageText();
+    if (!currentPageText) return;
+  }
+
+  addMessage(question, 'user');
+  input.value = '';
+  showLoading();
+
+  try {
+    const contextMessage = conversationHistory.length === 0
+      ? `Here is the page content:\n\n${currentPageText}\n\nNow answer this question about it: ${question}`
+      : question;
+
+    const response = await callOpenRouter(contextMessage);
+    
+    removeLoading();
+    addMessage(response, 'ai');
+    conversationHistory.push({ role: 'user', content: question });
+    conversationHistory.push({ role: 'assistant', content: response });
+  } catch (error) {
+    removeLoading();
+    showError('Failed to get response: ' + error.message);
+  }
+}
+
+async function callOpenRouter(userMessage) {
+  const messages = [
+    { role: 'user', content: userMessage }
+  ];
+
+  const response = await fetch(API_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-3.5-turbo',
+      messages: messages,
+      max_tokens: 1000
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+}
+
+function addMessage(text, sender) {
+  const container = document.getElementById('messagesContainer');
+  const messageEl = document.createElement('div');
+  messageEl.className = `avo-message ${sender}`;
+  
+  const contentEl = document.createElement('div');
+  contentEl.className = 'avo-message-content';
+  contentEl.textContent = text;
+  
+  messageEl.appendChild(contentEl);
+  container.appendChild(messageEl);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeLastMessage() {
+  const container = document.getElementById('messagesContainer');
+  const messages = container.querySelectorAll('.avo-message');
+  if (messages.length > 0) {
+    messages[messages.length - 1].remove();
+  }
+}
+
+function showLoading() {
+  const container = document.getElementById('messagesContainer');
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'avo-loading';
+  loadingEl.id = 'loadingIndicator';
+  
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'avo-loading-dot';
+    loadingEl.appendChild(dot);
+  }
+  
+  container.appendChild(loadingEl);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeLoading() {
+  const loading = document.getElementById('loadingIndicator');
+  if (loading) loading.remove();
+}
+
+function showError(message) {
+  const container = document.getElementById('messagesContainer');
+  const errorEl = document.createElement('div');
+  errorEl.className = 'avo-error';
+  errorEl.textContent = message;
+  container.appendChild(errorEl);
+  container.scrollTop = container.scrollHeight;
+}
+
+function clearConversation() {
+  conversationHistory = [];
+  currentPageText = '';
+  document.getElementById('messagesContainer').innerHTML = '';
+  document.getElementById('questionInput').value = '';
+}
+
+// Load page text on popup open
+window.addEventListener('load', async () => {
+  currentPageText = await getPageText();
 });
