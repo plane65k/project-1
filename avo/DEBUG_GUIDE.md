@@ -1,18 +1,21 @@
-# Debug Guide for OpenRouter 405 Error
+# Debug Guide for avo Extension
 
 ## Overview
-This guide explains how to debug and fix the 405 Method Not Allowed error from OpenRouter API.
+
+This guide explains how to debug and troubleshoot issues with the avo Chrome extension, particularly API-related errors.
 
 ## What is a 405 Error?
+
 HTTP 405 Method Not Allowed with an empty response body typically indicates that the request format is incorrect. This usually means:
+- Wrong API endpoint
 - Wrong model name format
 - Invalid request structure
 - Missing or malformed headers
-- Incorrect API endpoint
+- Invalid API key
 
 ## Debug Logs Explained
 
-The extension now includes comprehensive debug logging. Open Chrome DevTools (F12) and go to the Console tab to see these logs.
+The extension includes comprehensive debug logging. Open Chrome DevTools (F12) and go to the Console tab to see these logs.
 
 ### 1. Settings Loaded
 ```
@@ -21,12 +24,13 @@ The extension now includes comprehensive debug logging. Open Chrome DevTools (F1
 ✅ [DEBUG] API Key present: true
 ✅ [DEBUG] API Key format: Correct (sk-or-v1-)
 ✅ [DEBUG] Default model: openai/gpt-3.5-turbo
+✅ [DEBUG] API Endpoint: https://openrouter.ai/api/v1/chat/completions
 ```
 
 **What to check:**
 - Model name should be in `org/model-name` format (e.g., `openai/gpt-3.5-turbo`)
 - API Key should start with `sk-or-v1-`
-- If API Key format shows "Unexpected prefix", your key may be invalid
+- API Endpoint should be `https://openrouter.ai/api/v1/chat/completions` (note: .ai, not .io)
 
 ### 2. Saving Settings
 ```
@@ -44,7 +48,7 @@ The extension now includes comprehensive debug logging. Open Chrome DevTools (F1
 ```
 🔄 [DEBUG] ========== Preparing OpenRouter Request ==========
 🔄 [DEBUG] Selected Model: openai/gpt-3.5-turbo
-🔄 [DEBUG] API Endpoint: https://openrouter.io/api/v1/chat/completions
+🔄 [DEBUG] API Endpoint: https://openrouter.ai/api/v1/chat/completions
 🔄 [DEBUG] API Key (first 30 chars): sk-or-v1-xxxxxxxxxxxxx...
 🔄 [DEBUG] Request Body: {
   "model": "openai/gpt-3.5-turbo",
@@ -56,7 +60,7 @@ The extension now includes comprehensive debug logging. Open Chrome DevTools (F1
 
 **What to check:**
 - Model name MUST include org prefix (e.g., `openai/`, `meta-llama/`, `anthropic/`)
-- API endpoint should be `https://openrouter.io/api/v1/chat/completions`
+- API endpoint should be `https://openrouter.ai/api/v1/chat/completions`
 - API key should start with `sk-or-v1-`
 - Request body should have all required fields
 
@@ -83,7 +87,7 @@ The extension now includes comprehensive debug logging. Open Chrome DevTools (F1
 ```
 ❌ [ERROR] API returned error status
 ❌ [ERROR] Empty response body with error status
-❌ [ERROR] OpenRouter API error: 405 Method Not Allowed - Empty response (request format may be incorrect)
+❌ [ERROR] OpenRouter API error: 405 Method Not Allowed - Empty response
 ```
 
 ## Common Issues and Solutions
@@ -113,16 +117,16 @@ The extension now includes comprehensive debug logging. Open Chrome DevTools (F1
 **Problem:** API key doesn't start with `sk-or-v1-`
 
 **Solution:**
-1. Get a valid API key from https://openrouter.io/
+1. Get a valid API key from https://openrouter.ai/keys
 2. Open Settings in the extension
 3. Paste the key (should start with `sk-or-v1-`)
-4. Click Save Settings
+4. Click Save
 5. Check the console for "API Key format: Correct (sk-or-v1-)"
 
 ### Issue 3: Wrong Endpoint
-**Problem:** Using `.ai` instead of `.io`
+**Problem:** Using `.io` instead of `.ai`
 
-**Solution:** The endpoint is hardcoded correctly as `https://openrouter.io/api/v1/chat/completions` in popup.js line 9. If you see a different endpoint in the logs, the file may have been modified.
+**Solution:** The endpoint is hardcoded correctly as `https://openrouter.ai/api/v1/chat/completions` in popup.js line 9. If you see a different endpoint in the logs, verify the file hasn't been modified.
 
 ### Issue 4: Missing Headers
 **Problem:** Required headers not included
@@ -133,7 +137,7 @@ The extension now includes comprehensive debug logging. Open Chrome DevTools (F1
 - `HTTP-Referer: https://github.com`
 - `X-Title: avo`
 
-If you still get 405 errors, check that your API key has proper permissions and credits.
+If you still get errors, check that your API key has proper permissions and credits.
 
 ## Testing Steps
 
@@ -146,12 +150,13 @@ If you still get 405 errors, check that your API key has proper permissions and 
    - Go to Settings (⚙️ button)
    - Enter your API key (should start with `sk-or-v1-`)
    - Select a model (default is `openai/gpt-3.5-turbo`)
-   - Click Save Settings
+   - Click Save
 
 3. **Check Settings Logs**
    - Look for "Settings Loaded" section
    - Verify model format is correct
    - Verify API key format shows "Correct (sk-or-v1-)"
+   - Verify endpoint shows `https://openrouter.ai/api/v1/chat/completions`
 
 4. **Test API Call**
    - Click "Summarize Page" button
@@ -171,33 +176,40 @@ All models in the dropdown are in correct OpenRouter format:
 - `openai/gpt-4`
 - `openai/gpt-3.5-turbo` (default)
 
-**Llama (Meta):**
+**Meta:**
 - `meta-llama/llama-2-70b-chat`
 - `meta-llama/llama-2-13b-chat`
-- `meta-llama/llama-2-7b-chat`
-
-**Mistral:**
-- `mistralai/mistral-7b-instruct`
-- `mistralai/mistral-medium`
-- `mistralai/mistral-large`
-- `mistralai/dolphin-2.5-mixtral-8x7b`
 
 **Anthropic:**
 - `anthropic/claude-2`
 - `anthropic/claude-instant`
 
-## Still Getting 405 Errors?
+**Mistral:**
+- `mistralai/mistral-7b-instruct`
 
-If you still get 405 errors after following this guide:
+## Debug Log Reference
+
+| Emoji | Meaning | When It Appears |
+|-------|---------|-----------------|
+| 🔄 | Request preparation | Before making API call |
+| 📊 | Response received | After API responds |
+| ✅ | Success/Loaded | Settings loaded, successful response |
+| ❌ | Error | API error, validation error |
+| 💥 | Critical error | Unexpected exception |
+| 💾 | Saving | When saving to storage |
+
+## Still Getting Errors?
+
+If you still get errors after following this guide:
 
 1. **Copy the full request body from console logs** and verify it matches OpenRouter's expected format
-2. **Check your API key** at https://openrouter.io/ - ensure it has credits and proper permissions
+2. **Check your API key** at https://openrouter.ai/ - ensure it has credits and proper permissions
 3. **Try a different model** to see if it's model-specific
 4. **Check OpenRouter's status page** for any service issues
 5. **Look for additional error details** in the "Response Body (raw)" log
 
 ## Additional Resources
 
-- OpenRouter API Docs: https://openrouter.io/docs
-- OpenRouter Models: https://openrouter.io/models
-- Get API Key: https://openrouter.io/keys
+- OpenRouter API Docs: https://openrouter.ai/docs
+- OpenRouter Models: https://openrouter.ai/models
+- Get API Key: https://openrouter.ai/keys
