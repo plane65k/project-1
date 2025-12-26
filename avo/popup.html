@@ -126,6 +126,41 @@
             </svg>
             Summarize Page
           </button>
+          
+          <!-- Paste Text Section -->
+          <div class="avo-paste-section">
+            <div class="avo-paste-header">
+              <span class="avo-paste-label">Paste content to analyze</span>
+              <button id="pasteTextBtn" class="avo-btn avo-btn-text avo-paste-btn" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                  <path d="M8 12h8"/>
+                  <path d="M8 16h8"/>
+                </svg>
+                Paste Text
+              </button>
+            </div>
+
+            <div class="avo-source-row">
+              <span class="avo-source-title">Using:</span>
+              <div class="avo-segmented" role="group" aria-label="Text source">
+                <button id="sourcePageBtn" class="avo-seg-btn" type="button">Page</button>
+                <button id="sourcePastedBtn" class="avo-seg-btn" type="button">Pasted</button>
+                <button id="sourceBothBtn" class="avo-seg-btn" type="button">Both</button>
+              </div>
+              <span id="textSourceIndicator" class="avo-source-indicator">Page content</span>
+            </div>
+
+            <textarea
+              id="pasteTextInput"
+              class="avo-textarea"
+              placeholder="Paste text here..."
+              rows="3"
+              autocomplete="off"
+            ></textarea>
+          </div>
+          
           <div class="avo-input-wrapper">
             <input
               type="text"

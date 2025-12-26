@@ -548,6 +548,131 @@ body {
   flex: 1;
 }
 
+/* Paste Text Section */
+.avo-paste-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--md-sys-color-surface);
+  border-radius: 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.avo-paste-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.avo-paste-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.avo-paste-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  gap: 6px;
+  border-radius: 8px;
+  background-color: var(--md-sys-color-background);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  color: #34A853;
+}
+
+.avo-paste-btn:hover:not(:disabled) {
+  background-color: var(--md-sys-color-secondary-container);
+}
+
+.avo-source-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.avo-source-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.avo-segmented {
+  display: flex;
+  gap: 4px;
+  background-color: var(--md-sys-color-surface-variant);
+  padding: 2px;
+  border-radius: 8px;
+}
+
+.avo-seg-btn {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--motion-duration-short) var(--motion-easing-standard);
+  font-family: inherit;
+}
+
+.avo-seg-btn.active {
+  background-color: var(--md-sys-color-background);
+  color: var(--md-sys-color-primary);
+  box-shadow: var(--elevation-1);
+}
+
+.avo-seg-btn:hover:not(.active):not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.avo-seg-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.avo-source-indicator {
+  font-size: 11px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-left: auto;
+  font-style: italic;
+}
+
+.avo-textarea {
+  background-color: var(--md-sys-color-background);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all var(--motion-duration-short) var(--motion-easing-standard);
+  width: 100%;
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.4;
+}
+
+.avo-textarea:focus {
+  outline: none;
+  border-color: var(--md-sys-color-primary);
+  border-width: 2px;
+  padding: 9px 11px;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 3px var(--md-sys-color-secondary-container);
+}
+
+.avo-textarea::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.6;
+}
+
 /* Settings Modal */
 .avo-modal {
   display: none;
