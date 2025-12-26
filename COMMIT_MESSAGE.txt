@@ -1,0 +1,128 @@
+Fix OpenRouter 405 error with comprehensive debug logging
+
+## Problem
+Users were experiencing 405 Method Not Allowed errors from OpenRouter API
+with empty response bodies, making it difficult to diagnose the root cause.
+
+## Solution
+Added comprehensive debug logging throughout the extension to help identify
+and fix 405 errors by showing exactly what's being sent to and received
+from OpenRouter.
+
+## Changes Made
+
+### Modified: avo/popup.js
+1. Enhanced loadSettings() function:
+   - Added detailed logs showing loaded model name
+   - Validates API key format (checks for sk-or-v1- prefix)
+   - Shows if API key is present or missing
+   - Displays default model being used
+
+2. Enhanced saveSettings() function:
+   - Logs model being saved
+   - Shows API key prefix being saved
+   - Confirms successful save with log
+   - Logs errors if save fails
+
+3. Completely rewrote callOpenRouter() function:
+   - Request preparation logs:
+     * Selected model name
+     * API endpoint URL
+     * API key prefix (first 30 chars)
+     * Full request body in formatted JSON
+   
+   - Response logs:
+     * HTTP status code and text
+     * Response headers (content-type, rate limits)
+     * Raw response body before parsing
+   
+   - Enhanced error handling:
+     * Attempts to parse error JSON from response
+     * Handles empty response bodies specifically
+     * Provides clear error message for 405 with empty response
+     * Validates response structure
+   
+   - All logs use emoji prefixes for easy filtering:
+     * 🔄 [DEBUG] - Request preparation
+     * 📊 [DEBUG] - Response received
+     * ✅ [DEBUG] - Success/loaded
+     * ❌ [ERROR] - Error occurred
+     * 💥 [ERROR] - Critical error
+     * 💾 [DEBUG] - Saving data
+
+### Added: avo/DEBUG_GUIDE.md
+Comprehensive debugging guide including:
+- Explanation of 405 errors and what they mean
+- Detailed description of each debug log
+- Common issues and solutions
+- Step-by-step testing instructions
+- Model format reference (org/model-name)
+- Troubleshooting checklist
+- Available models list
+
+### Added: CHANGES.md
+Summary document with:
+- Overview of all changes
+- Before/after code comparisons
+- How to use the new debug logs
+- Expected model format examples
+- Testing checklist
+
+### Added: TEST_INSTRUCTIONS.md
+Step-by-step testing guide with:
+- Prerequisites and setup
+- Detailed test steps
+- Expected console outputs
+- Troubleshooting section
+- Success/failure indicators
+- Debug log reference table
+
+## Verification
+
+### Model Names (Already Correct)
+All model names in popup.html already use correct OpenRouter format:
+- ✅ openai/gpt-3.5-turbo (default)
+- ✅ openai/gpt-4
+- ✅ meta-llama/llama-2-70b-chat
+- ✅ anthropic/claude-2
+- ✅ mistralai/mistral-7b-instruct
+
+### API Configuration (Already Correct)
+- ✅ DEFAULT_MODEL = 'openai/gpt-3.5-turbo'
+- ✅ API_ENDPOINT = 'https://openrouter.io/api/v1/chat/completions'
+
+### Required Headers (Already Present)
+- ✅ Content-Type: application/json
+- ✅ Authorization: Bearer ${apiKey}
+- ✅ HTTP-Referer: https://github.com
+- ✅ X-Title: avo
+
+## Impact
+
+### For Users
+- Clear visibility into API requests and responses
+- Easy diagnosis of 405 errors
+- Better error messages with context
+- API key format validation
+
+### For Developers
+- Console logs show exact request format
+- Can verify model names are correct
+- Can see raw API responses
+- Easier to debug integration issues
+
+## Testing
+
+To test the changes:
+1. Open Chrome DevTools (F12) > Console tab
+2. Click the avo extension icon
+3. Configure API key in Settings
+4. Click "Summarize Page"
+5. Watch Console for detailed logs
+
+See TEST_INSTRUCTIONS.md for complete testing guide.
+
+## Related Documentation
+- DEBUG_GUIDE.md - Comprehensive troubleshooting
+- CHANGES.md - Summary of changes
+- TEST_INSTRUCTIONS.md - Testing guide

@@ -103,7 +103,11 @@ async function loadSettings() {
 
   modelSelect.value = selectedModel;
 
-  console.log('✅ Settings loaded:', { model: selectedModel, hasApiKey: !!apiKey });
+  console.log('✅ [DEBUG] ========== Settings Loaded ==========');
+  console.log('✅ [DEBUG] Model:', selectedModel);
+  console.log('✅ [DEBUG] API Key present:', !!apiKey);
+  console.log('✅ [DEBUG] API Key format:', apiKey ? (apiKey.startsWith('sk-or-v1-') ? 'Correct (sk-or-v1-)' : `Unexpected prefix: ${apiKey.substring(0, 10)}...`) : 'MISSING');
+  console.log('✅ [DEBUG] Default model:', DEFAULT_MODEL);
 }
 
 async function saveSettings() {
@@ -115,6 +119,10 @@ async function saveSettings() {
     return;
   }
 
+  console.log('💾 [DEBUG] ========== Saving Settings ==========');
+  console.log('💾 [DEBUG] Model to save:', nextModel);
+  console.log('💾 [DEBUG] API Key prefix:', nextApiKey.substring(0, 10) + '...');
+
   try {
     await storageSet({
       [STORAGE_KEYS.apiKey]: nextApiKey,
@@ -124,9 +132,11 @@ async function saveSettings() {
     apiKey = nextApiKey;
     selectedModel = nextModel;
 
+    console.log('✅ [DEBUG] Settings saved successfully');
     closeSettings();
     addMessage('✓ Settings saved!', 'ai');
   } catch (err) {
+    console.error('❌ [ERROR] Failed to save settings:', err);
     showError(`Failed to save settings: ${err.message}`);
   }
 }
@@ -259,9 +269,19 @@ async function callOpenRouter(userMessage) {
       { role: 'user', content: userMessage },
     ];
 
-    console.log('🔄 Calling OpenRouter API...');
-    console.log('Model:', selectedModel);
-    console.log('API Key format:', apiKey ? (apiKey.substring(0, 20) + '...') : 'none');
+    console.log('🔄 [DEBUG] ========== Preparing OpenRouter Request ==========');
+    console.log('🔄 [DEBUG] Selected Model:', selectedModel);
+    console.log('🔄 [DEBUG] API Endpoint:', API_ENDPOINT);
+    console.log('🔄 [DEBUG] API Key (first 30 chars):', apiKey ? apiKey.substring(0, 30) + '...' : 'NONE');
+
+    const requestBody = {
+      model: selectedModel,
+      messages: messages,
+      max_tokens: 1000,
+      temperature: 0.7,
+    };
+
+    console.log('🔄 [DEBUG] Request Body:', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
@@ -271,38 +291,53 @@ async function callOpenRouter(userMessage) {
         'HTTP-Referer': 'https://github.com',
         'X-Title': 'avo',
       },
-      body: JSON.stringify({
-        model: selectedModel,
-        messages: messages,
-        max_tokens: 1000,
-        temperature: 0.7,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
-    console.log('📊 Response status:', response.status);
+    console.log('📊 [DEBUG] ========== Response Received ==========');
+    console.log('📊 [DEBUG] Response Status:', response.status);
+    console.log('📊 [DEBUG] Response Status Text:', response.statusText);
+    console.log('📊 [DEBUG] Response Headers:', {
+      contentType: response.headers.get('content-type'),
+      xRatelimitLimitRequests: response.headers.get('x-ratelimit-limit-requests'),
+      xRatelimitRemainingRequests: response.headers.get('x-ratelimit-remaining-requests'),
+    });
+
+    const responseText = await response.text();
+    console.log('📊 [DEBUG] Response Body (raw):', responseText);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API Error Response:', errorText);
+      console.error('❌ [ERROR] API returned error status');
 
-      try {
-        const errorData = JSON.parse(errorText);
-        throw new Error(`OpenRouter API error (${response.status}): ${errorData.error?.message || errorText}`);
-      } catch (e) {
-        throw new Error(`OpenRouter API error (${response.status}): ${errorText}`);
+      if (responseText) {
+        try {
+          const errorData = JSON.parse(responseText);
+          console.error('❌ [ERROR] Parsed error:', errorData);
+          throw new Error(`OpenRouter error (${response.status}): ${errorData.error?.message || responseText}`);
+        } catch (e) {
+          if (e.message.startsWith('OpenRouter error')) {
+            throw e;
+          }
+          console.error('❌ [ERROR] Could not parse error response as JSON');
+          throw new Error(`OpenRouter error (${response.status}): ${responseText || 'No response body'}`);
+        }
+      } else {
+        console.error('❌ [ERROR] Empty response body with error status');
+        throw new Error(`OpenRouter API error: ${response.status} ${response.statusText} - Empty response (request format may be incorrect)`);
       }
     }
 
-    const data = await response.json();
-    console.log('✅ API Success! Response:', data);
+    const data = JSON.parse(responseText);
+    console.log('✅ [SUCCESS] OpenRouter response:', data);
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response format from OpenRouter');
+      console.error('❌ [ERROR] Invalid response format:', data);
+      throw new Error('Invalid response format: missing choices or message content');
     }
 
     return data.choices[0].message.content;
   } catch (error) {
-    console.error('💥 Full error:', error);
+    console.error('💥 [ERROR] Full error in callOpenRouter:', error);
     throw error;
   }
 }
