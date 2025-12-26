@@ -8,15 +8,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function extractPageText() {
-  const text = document.body.innerText || document.body.textContent || '';
-  
-  // Clean up whitespace
+  const text = document.body?.innerText || document.body?.textContent || '';
+
   const cleaned = text
     .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
     .join('\n');
-  
-  // Limit to first 8000 characters
+
   return cleaned.substring(0, 8000);
 }

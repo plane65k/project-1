@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>avo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="avo-container">
+    <header class="avo-header">
+      <h1>avo</h1>
+      <div class="avo-header-buttons">
+        <button id="settingsBtn" class="avo-settings-btn" title="Settings">⚙️</button>
+        <button id="clearBtn" class="avo-clear-btn">Clear</button>
+      </div>
+    </header>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="avo-modal hidden">
+      <div class="avo-modal-content">
+        <div class="avo-modal-header">
+          <h2>Settings</h2>
+          <button id="closeSettingsBtn" class="avo-modal-close" aria-label="Close settings">&times;</button>
+        </div>
+
+        <div class="avo-modal-body">
+          <div class="avo-settings-group">
+            <label for="apiKeyInput">OpenRouter API Key:</label>
+            <input
+              type="password"
+              id="apiKeyInput"
+              class="avo-settings-input"
+              placeholder="Enter your OpenRouter API key"
+              autocomplete="off"
+            >
+            <small class="avo-help-text">Stored in chrome.storage.sync and synced with your signed-in Chrome profile</small>
+          </div>
+
+          <div class="avo-settings-group">
+            <label for="modelSelect">AI Model:</label>
+            <select id="modelSelect" class="avo-settings-select">
+              <optgroup label="OpenAI">
+                <option value="gpt-4">gpt-4 (OpenAI's most powerful)</option>
+                <option value="gpt-4-32k">gpt-4-32k</option>
+                <option value="gpt-4-turbo">gpt-4-turbo</option>
+                <option value="gpt-3.5-turbo" selected>gpt-3.5-turbo (Default)</option>
+                <option value="text-davinci-003">text-davinci-003</option>
+              </optgroup>
+
+              <optgroup label="Meta / Llama">
+                <option value="meta-llama/llama-2-70b-chat">meta-llama/llama-2-70b-chat</option>
+                <option value="meta-llama/llama-2-13b-chat">meta-llama/llama-2-13b-chat</option>
+                <option value="meta-llama/llama-2-7b-chat">meta-llama/llama-2-7b-chat</option>
+                <option value="meta-llama/llama-3-70b-instruct">meta-llama/llama-3-70b-instruct</option>
+                <option value="meta-llama/llama-3-8b-instruct">meta-llama/llama-3-8b-instruct</option>
+              </optgroup>
+
+              <optgroup label="Anthropic Claude">
+                <option value="claude-2">claude-2</option>
+                <option value="claude-instant">claude-instant</option>
+                <option value="claude-3-opus">claude-3-opus</option>
+                <option value="claude-3-sonnet">claude-3-sonnet</option>
+                <option value="claude-3-haiku">claude-3-haiku</option>
+              </optgroup>
+
+              <optgroup label="Mistral">
+                <option value="mistral-7b-instruct">mistral-7b-instruct</option>
+                <option value="mistral-small">mistral-small</option>
+                <option value="mistral-medium">mistral-medium</option>
+                <option value="mistral-large">mistral-large</option>
+                <option value="mixtral-8x7b-instruct">mixtral-8x7b-instruct</option>
+                <option value="mixtral-8x22b-instruct">mixtral-8x22b-instruct</option>
+                <option value="dolphin-2.5-mixtral-8x7b">dolphin-2.5-mixtral-8x7b</option>
+              </optgroup>
+
+              <optgroup label="Other Notable Models">
+                <option value="neural-chat-7b">neural-chat-7b</option>
+                <option value="chronos-hermes-13b">chronos-hermes-13b</option>
+                <option value="alpaca-13b">alpaca-13b</option>
+                <option value="nous-hermes-2-mixtral-8x7b">nous-hermes-2-mixtral-8x7b</option>
+                <option value="openchat-7b">openchat-7b</option>
+                <option value="starling-lm-7b-beta">starling-lm-7b-beta</option>
+                <option value="qwen-2.5-72b-instruct">qwen-2.5-72b-instruct</option>
+                <option value="qwen-2.5-7b-instruct">qwen-2.5-7b-instruct</option>
+                <option value="deepseek-r1">deepseek-r1</option>
+                <option value="deepseek-v3">deepseek-v3</option>
+                <option value="gemma-2-9b-it">gemma-2-9b-it</option>
+                <option value="gemma-2-27b-it">gemma-2-27b-it</option>
+                <option value="phi-3-medium-128k-instruct">phi-3-medium-128k-instruct</option>
+                <option value="phi-3-mini-128k-instruct">phi-3-mini-128k-instruct</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="avo-modal-footer">
+          <button id="saveSettingsBtn" class="avo-btn-primary">Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="avo-messages" id="messagesContainer">
+      <!-- Messages will be added here -->
+    </div>
+
+    <footer class="avo-footer">
+      <button id="summarizeBtn" class="avo-btn-primary">Summarize Page</button>
+      <div class="avo-input-group">
+        <input
+          type="text"
+          id="questionInput"
+          placeholder="Ask about this page..."
+          class="avo-input"
+        >
+        <button id="sendBtn" class="avo-btn-send">Send</button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
