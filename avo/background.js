@@ -1,11 +1,20 @@
 'use strict';
 
-chrome.action.onClicked.addListener((tab) => {
-  if (tab.id) {
-    chrome.tabs.sendMessage(tab.id, { action: 'toggleWidget' }).catch((err) => {
-      // If content script is not yet injected or loaded, we might need to inject it
-      // But according to manifest.json it's injected on all_urls
-      console.error('Failed to send toggleWidget message:', err);
-    });
+chrome.action.onClicked.addListener(async (tab) => {
+  if (!tab.id) return;
+
+  try {
+    await chrome.tabs.sendMessage(tab.id, { action: 'toggleWidget' });
+  } catch (error) {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['content.js']
+      });
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await chrome.tabs.sendMessage(tab.id, { action: 'toggleWidget' });
+    } catch (injectError) {
+      console.error('Failed to inject content script or send message:', injectError);
+    }
   }
 });
