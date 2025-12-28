@@ -19,12 +19,12 @@
       "matches": ["<all_urls>"],
       "js": ["content.js"],
       "run_at": "document_idle",
-      "all_frames": true
+      "all_frames": false
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["styles.css", "popup.html"],
+      "resources": ["styles.css"],
       "matches": ["<all_urls>"]
     }
   ]
