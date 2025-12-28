@@ -4,7 +4,7 @@
   box-sizing: border-box;
 }
 
-:root {
+:host, :root {
   /* Material 3 Green Color Palette */
   --md-sys-color-primary: #1F8C44;
   --md-sys-color-on-primary: #FFFFFF;
@@ -45,16 +45,93 @@
   --motion-easing-emphasized: cubic-bezier(0.2, 0.0, 0.0, 1.0);
 }
 
-body {
-  width: 550px;
-  height: 750px;
-  font-family: 'Google Sans', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+/* Widget Container */
+.gemini-widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 500px;
+  height: 650px;
   background-color: var(--md-sys-color-background);
-  color: var(--md-sys-color-on-background);
+  box-shadow: var(--elevation-3);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  z-index: 2147483647;
   overflow: hidden;
+  border: 1px solid var(--md-sys-color-surface-variant);
+  font-family: 'Google Sans', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   line-height: 1.5;
 }
 
+.gemini-widget-header {
+  padding: 8px 16px;
+  background-color: var(--md-sys-color-primary);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+  user-select: none;
+}
+
+.gemini-widget-title {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.gemini-widget-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.gemini-widget-controls button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.gemini-widget-controls button:hover {
+  opacity: 1;
+}
+
+.gemini-widget-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.gemini-resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, var(--md-sys-color-outline-variant) 50%);
+  z-index: 1000;
+}
+
+.gemini-widget.minimized {
+  height: 40px !important;
+}
+
+.gemini-widget.minimized .gemini-widget-content,
+.gemini-widget.minimized .gemini-resize-handle {
+  display: none;
+}
+
+/* Base styles adjusted for widget */
 .avo-container {
   display: flex;
   flex-direction: column;

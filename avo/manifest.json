@@ -9,14 +9,23 @@
     "https://openrouter.ai/*"
   ],
   "action": {
-    "default_popup": "popup.html",
     "default_title": "avo - AI Page Analyzer"
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["styles.css", "popup.html"],
+      "matches": ["<all_urls>"]
     }
   ]
 }
