@@ -1197,6 +1197,7 @@ async function initWidget() {
 async function toggleWidget(force) {
   if (!widget) {
     await initWidget();
+    widgetVisible = true;
   }
   const widgetEl = shadowRoot.getElementById('gemini-widget');
   widgetVisible = force !== undefined ? force : !widgetVisible;
