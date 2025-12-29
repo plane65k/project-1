@@ -842,6 +842,7 @@ async function sendQuestion() {
     showError(`Failed to get response: ${error.message}`);
   } finally {
     setBusy(false);
+    questionInput.focus();
   }
 }
 
